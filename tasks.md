@@ -1,4 +1,5 @@
-[] X : Explore the codebase, clean it from duplications + extract shared component + doc the app
+[] abdo : Explore the codebase: package.json, pnpm install, pnpm-lock.yaml, node_moudles, .gitignore,
+[] abdo: create a branch named feat/abdo and git push to your branch not main
 [x] save the cart information
 [x] lamine: remove the brand and make the images, select a couple of brands from the database
 [x] lamine: redesign the categories: replace the text and box with real images in box instead
@@ -19,3 +20,4 @@
 [x] add debouncing to the search 250ms
 [x] display the images in the cart
 [x] light/dark swticher
+mkj
