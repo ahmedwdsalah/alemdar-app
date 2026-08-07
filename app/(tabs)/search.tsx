@@ -7,18 +7,18 @@ import { useSearchProducts } from "@/hooks/useSearchProducts";
 import { useSectionProducts } from "@/hooks/useSectionProducts";
 import type { UniversalSearchItem } from "@/lib/api-types";
 import { t as i18nT, useLocale } from "@/lib/i18n";
+import { HOME_SECTIONS } from "@/lib/section-meta";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import { FlashList } from "@shopify/flash-list";
 import {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
   BottomSheetModal,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
+import { FlashList } from "@shopify/flash-list";
 import * as Haptics from "expo-haptics";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useDebounce } from "use-debounce";
 import {
   ActivityIndicator,
   Dimensions,
@@ -39,24 +39,7 @@ import Animated, {
   LinearTransition,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Svg, { Path } from "react-native-svg";
-import {
-  siAdafruit,
-  siAmd,
-  siApple,
-  siArduino,
-  siAsus,
-  siBosch,
-  siBroadcom,
-  siDell,
-  siEspressif,
-  siHp,
-  siHuawei,
-  siIntel,
-  siJbl,
-  siRaspberrypi,
-} from "simple-icons";
-import { HOME_SECTIONS } from "@/lib/section-meta";
+import { useDebounce } from "use-debounce";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const PRODUCTS_PAGE_SIZE = 20;
@@ -84,49 +67,6 @@ const filterCategories = [
   "Components",
 ];
 
-const brands = [
-  "Arduino",
-  "Espressif",
-  "Raspberry Pi",
-  "Adafruit",
-  "Apple",
-  "Dell",
-  "HP",
-  "Huawei",
-  "ASUS",
-  "Intel",
-  "AMD",
-  "Bosch",
-  "Broadcom",
-  "JBL",
-];
-
-const brandLogos: Record<string, { path: string; hex: string }> = {
-  Arduino: siArduino,
-  Espressif: siEspressif,
-  "Raspberry Pi": siRaspberrypi,
-  Adafruit: siAdafruit,
-  Apple: siApple,
-  Dell: siDell,
-  HP: siHp,
-  Huawei: siHuawei,
-  ASUS: siAsus,
-  Intel: siIntel,
-  AMD: siAmd,
-  Bosch: siBosch,
-  Broadcom: siBroadcom,
-  JBL: siJbl,
-};
-
-function BrandLogo({ brand, size }: { brand: string; size: number }) {
-  const icon = brandLogos[brand];
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24">
-      <Path d={icon.path} fill={`#${icon.hex}`} />
-    </Svg>
-  );
-}
-
 const sortOptionKeys = [
   { key: "Popularity", i18nKey: "search.popularity" },
   { key: "Price: Low → High", i18nKey: "search.priceLowHigh" },
@@ -141,6 +81,7 @@ export default function SearchScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const router = useRouter();
+  const params = useLocalSearchParams();
   const offlineBannerVisible = useOfflineBannerVisible();
 
   // ── State
@@ -157,6 +98,18 @@ export default function SearchScreen() {
   const inputRef = useRef<TextInput>(null);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["88%"], []);
+
+  // ⭐ FIX: Run every time the screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      const newQuery = params.query as string || "";
+      if (newQuery) {
+        setTimeout(() => {
+          setQuery(newQuery);
+        }, 150);
+      }
+    }, [params.query])
+  );
 
   //  Theme tokens
   const t: Record<string, string> = {
@@ -182,12 +135,6 @@ export default function SearchScreen() {
     );
   };
 
-  const toggleBrand = (brand: string) => {
-    setSelectedBrands((prev) =>
-      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand],
-    );
-  };
-
   // ── Derived (live API search)
   const [debouncedQuery] = useDebounce(query, 250);
   const isSearching = query.trim().length > 0;
@@ -200,7 +147,6 @@ export default function SearchScreen() {
     isError: searchError,
     refetch: refetchSearch,
   } = useSearchProducts(debouncedQuery);
-  const results = (searchData?.data ?? []) as unknown as ApiProduct[];
   const isOnline = useIsOnline();
   // Search never hits the persisted cache (staleTime/gcTime 0), so offline
   // it can never resolve — show the same offline takeover as product-detail
@@ -220,6 +166,7 @@ export default function SearchScreen() {
 
   // ── Live filtering + sorting, applied on top of the raw search results
   const filteredResults = useMemo(() => {
+    const results = (searchData?.data ?? []) as unknown as ApiProduct[];
     let list = [...results];
 
     if (selectedCategories.length > 0) {
@@ -240,14 +187,14 @@ export default function SearchScreen() {
     }
 
     return list;
-  }, [results, selectedCategories, selectedBrands]);
+  }, [searchData?.data, selectedCategories, selectedBrands]);
 
   // ── Focus → auto-open keyboard
   useFocusEffect(
     useCallback(() => {
       setTimeout(() => inputRef.current?.focus(), 100);
       return () => Keyboard.dismiss();
-    }, []),
+    }, [])
   );
 
   //  Handlers

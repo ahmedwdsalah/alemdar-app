@@ -9,3 +9,4 @@ onlyBuiltDependencies:
 allowBuilds:
   "@prisma/engines": false
   prisma: false
+  unrs-resolver: set this to true or false

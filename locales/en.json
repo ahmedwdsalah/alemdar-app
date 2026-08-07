@@ -1,4 +1,20 @@
 {
+  "categories": {
+    "solar": "Solar",
+    "arduino": "Arduino",
+    "sound": "Sound",
+    "batteries": "Batteries",
+    "chargers": "Chargers",
+    "adapters": "Adapters",
+    "lamps": "Lamps",
+    "mexxsun": "Mexxsun",
+    "filaments": "Filaments",
+    "tv_remotes": "TV Remotes",
+    "fans": "Fans",
+    "electric": "Electric",
+    "screwdrivers": "Screwdrivers",
+    "spray_gum": "Spray Gum"
+  },
   "myOrders": "My Orders",
   "wishlist": "Wishlist",
   "coupons": "Coupons",
@@ -70,7 +86,7 @@
   "home": {
     "searchPlaceholder": "Search Arduino, solar, cables...",
     "categories": "Categories",
-    "brands": "Featured Brands",
+    "brands": "Search by Brand",
     "followUs": "Follow us & find us",
     "copyright": "© 2026 Alemdar Teknik · Lefkoşa, KKTC",
     "location": "Lefkoşa, KKTC",
@@ -152,5 +168,27 @@
     "shippingValue": "Same-day in Lefkoşa",
     "moreFrom": "More from %{title}",
     "addedToCart": "Added to cart!"
+  },
+  "banner": {
+  "slide1": {
+    "topLabel": "Power Your",
+    "title": "PROJECTS",
+    "subtitle": "Top quality electronics\nfor makers & engineers"
+  },
+  "slide2": {
+    "topLabel": "Explore",
+    "title": "ARDUINO",
+    "subtitle": "Boards, modules & sensors\nfor every project"
+  },
+  "slide3": {
+    "topLabel": "Power Up",
+    "title": "SOLAR",
+    "subtitle": "Panels, inverters &\nenergy solutions"
+  },
+  "slide4": {
+    "topLabel": "Sound Your",
+    "title": "WORLD",
+    "subtitle": "Speakers, mixers &\naudio systems"
   }
+}
 }

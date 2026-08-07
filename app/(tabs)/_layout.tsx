@@ -1,20 +1,20 @@
 import LanguageSheet from "@/components/LanguageSheet";
-import SettingsSheet from "@/components/SettingsSheet";
-import OnboardingSheet from "@/components/OnboardingSheet";
 import { NAVBAR_V2_STYLE, NavbarV2Background } from "@/components/NavbarV2";
+import OnboardingSheet from "@/components/OnboardingSheet";
 import PrivacySheet from "@/components/PrivacySheet";
+import SettingsSheet from "@/components/SettingsSheet";
 import { useColorScheme } from "@/components/useColorScheme";
+import BottomSheet, { type BottomSheetMethods } from "@devvie/bottom-sheet";
+import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Tabs } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
-import BottomSheet, { type BottomSheetMethods } from "@devvie/bottom-sheet";
-import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ONBOARDING_KEY = "onboarding_done_v5";// bump it to the next number for the boarding flow to appear v5 to v6 
 
