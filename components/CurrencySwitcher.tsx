@@ -2,24 +2,29 @@ import { currencies, useCurrency } from '@/context/CurrencyContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import {
-    Modal,
-    Pressable,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from 'react-native';
 
 export default function CurrencySwitcher() {
   const [visible, setVisible] = useState(false);
-  const { currency, setCurrency } = useCurrency();
+  const { currency, setCurrency, refreshRates, lastUpdated, isLoading, isUsingFallback } = useCurrency();
   const isDark = useColorScheme() === 'dark';
 
   const bgColor = isDark ? '#1C1C1E' : '#FFFFFF';
   const textColor = isDark ? '#FFFFFF' : '#000000';
   const subTextColor = isDark ? '#8E8E93' : '#8E8E93';
   const dividerColor = isDark ? '#38383A' : '#E5E5EA';
+
+  const handleCurrencySelect = (cur: typeof currencies[0]) => {
+    setCurrency({ ...cur, rate: 1 });
+    setVisible(false);
+  };
 
   return (
     <>
@@ -52,31 +57,48 @@ export default function CurrencySwitcher() {
 
             <View style={[styles.divider, { backgroundColor: dividerColor }]} />
 
-            {currencies.map((cur) => (
-              <TouchableOpacity
-                key={cur.code}
-                onPress={() => {
-                  setCurrency(cur);
-                  setVisible(false);
-                }}
-                style={[
-                  styles.currencyOption,
-                  currency.code === cur.code && styles.selectedOption,
-                ]}
-              >
-                <View style={styles.currencyInfo}>
-                  <Text style={[styles.currencySymbol, { color: textColor }]}>
-                    {cur.symbol}
-                  </Text>
-                  <Text style={[styles.currencyLabel, { color: textColor }]}>
-                    {cur.label}
-                  </Text>
-                </View>
-                {currency.code === cur.code && (
-                  <Ionicons name="checkmark-circle" size={22} color="#FF6B00" />
-                )}
-              </TouchableOpacity>
-            ))}
+            {/* ⭐ Show status with fallback indicator */}
+            <Text style={[styles.lastUpdated, { color: subTextColor }]}>
+              {isLoading ? 'Loading rates...' : 
+                isUsingFallback ? '⚠️ Using cached rates (offline)' :
+                `Updated: ${lastUpdated || 'Today'}`}
+            </Text>
+
+            {currencies.map((cur) => {
+              const isSelected = currency.code === cur.code;
+              return (
+                <TouchableOpacity
+                  key={cur.code}
+                  onPress={() => handleCurrencySelect(cur)}
+                  style={[
+                    styles.currencyOption,
+                    isSelected && styles.selectedOption,
+                  ]}
+                >
+                  <View style={styles.currencyInfo}>
+                    <Text style={[styles.currencySymbol, { color: textColor }]}>
+                      {cur.symbol}
+                    </Text>
+                    <Text style={[styles.currencyLabel, { color: textColor }]}>
+                      {cur.label}
+                    </Text>
+                  </View>
+                  {isSelected && (
+                    <Ionicons name="checkmark-circle" size={22} color="#FF6B00" />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+
+            <TouchableOpacity
+              onPress={() => refreshRates()}
+              style={styles.refreshButton}
+            >
+              <Ionicons name="refresh-outline" size={18} color={subTextColor} />
+              <Text style={[styles.refreshText, { color: subTextColor }]}>
+                {isLoading ? 'Updating...' : 'Refresh Rates'}
+              </Text>
+            </TouchableOpacity>
           </View>
         </Pressable>
       </Modal>
@@ -101,7 +123,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   headerTitle: {
     fontSize: 18,
@@ -109,7 +131,12 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    marginBottom: 16,
+    marginBottom: 12,
+  },
+  lastUpdated: {
+    fontSize: 11,
+    textAlign: 'center',
+    marginBottom: 12,
   },
   currencyOption: {
     flexDirection: 'row',
@@ -145,5 +172,17 @@ const styles = StyleSheet.create({
   currencyText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  refreshButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    marginTop: 4,
+  },
+  refreshText: {
+    fontSize: 13,
+    fontWeight: '500',
   },
 });

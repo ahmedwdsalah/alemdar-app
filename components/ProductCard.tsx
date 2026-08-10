@@ -55,7 +55,8 @@ function ProductCardBase({ product, sectionTitle, accentColor = AMBER, width = 1
   const categoryLabel = sectionTitle ?? product.category ?? '';
 
   const isProductWishlisted = isWishlisted(id);
-  const priceNum = parseFloat(`${whole}.${dec}`);
+  // ⭐ Price is in USD from the database
+  const priceInUSD = parseFloat(`${whole}.${dec}`);
 
   const goToDetail = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -153,10 +154,11 @@ function ProductCardBase({ product, sectionTitle, accentColor = AMBER, width = 1
           <Text numberOfLines={2} style={{ fontSize: 11, fontWeight: '600', color: TEXT, lineHeight: 15, minHeight: 30, marginBottom: 8 }}>
             {name}
           </Text>
-          
+
+          {/* ⭐ Price in USD from database, converted to selected currency */}
           <RNView style={{ flexDirection: 'row', alignItems: 'flex-end', marginBottom: 8 }}>
             <Text style={{ fontSize: 17, fontWeight: '800', color: TEXT }}>
-              {convertPrice(priceNum)}
+              {convertPrice(priceInUSD)}
             </Text>
           </RNView>
 
@@ -213,7 +215,6 @@ function ProductCardBase({ product, sectionTitle, accentColor = AMBER, width = 1
         cardPosition={cardPosition}
       />
 
-      {/* ⭐ Custom Share Menu */}
       <CustomShareMenu
         visible={shareMenuVisible}
         onClose={() => setShareMenuVisible(false)}

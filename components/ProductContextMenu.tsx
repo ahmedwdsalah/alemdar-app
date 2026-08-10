@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 10,
     overflow: 'hidden',
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: 'rgba(230, 10, 10, 0.05)',
   },
   productImage: {
     width: '100%',

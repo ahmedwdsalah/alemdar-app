@@ -13,9 +13,20 @@ export type ExchangeRates = {
 
 export async function fetchExchangeRates(): Promise<ExchangeRates> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // ⭐ 5 second timeout
+
     const response = await fetch(
-      'https://api.frankfurter.dev/v1/latest?base=USD&symbols=TRY,EUR'
+      'https://api.frankfurter.dev/v1/latest?base=USD&symbols=TRY,EUR',
+      { 
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+        },
+      }
     );
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`Rate fetch failed: ${response.status}`);
@@ -40,6 +51,28 @@ export async function fetchExchangeRates(): Promise<ExchangeRates> {
     };
   } catch (error) {
     console.error('[currency-rates] failed:', error);
+    
+    // ⭐ Return cached rates if available
+    try {
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      const cached = await AsyncStorage.getItem('@currency_rates');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.rates) {
+          console.log('📦 Using cached rates from:', parsed.date || 'previous session');
+          return {
+            base: 'USD',
+            date: parsed.date || null,
+            rates: parsed.rates,
+            fallback: true,
+          };
+        }
+      }
+    } catch (cacheError) {
+      console.error('Failed to load cached rates:', cacheError);
+    }
+
+    // ⭐ Ultimate fallback
     return {
       base: 'USD',
       date: null,

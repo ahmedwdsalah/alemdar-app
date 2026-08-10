@@ -1,3 +1,5 @@
+import FacebookIcon from '@/assets/icons/facebook.svg';
+import InstagramIcon from '@/assets/icons/instagram.svg';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
@@ -7,7 +9,6 @@ import {
     Dimensions,
     Linking,
     Modal,
-    Platform,
     Pressable,
     Share,
     StyleSheet,
@@ -21,7 +22,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 type ShareOption = {
   id: string;
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   onPress: () => void;
 };
@@ -93,40 +94,55 @@ export default function CustomShareMenu({ visible, onClose, title, message, url 
     onClose();
   };
 
-  // ⭐ Clean share options - matching context menu style
+  // ⭐ Clean icons — no backgrounds
   const shareOptions: ShareOption[] = [
     {
-      id: 'message',
-      icon: 'chatbubble-outline',
-      label: 'Messages',
+      id: 'whatsapp',
+      icon: (
+        <View style={styles.iconWrapper}>
+          <Ionicons name="logo-whatsapp" size={40} color="#25D366" />
+        </View>
+      ),
+      label: 'WhatsApp',
       onPress: () => {
-        const smsUrl = Platform.OS === 'ios' 
-          ? `sms:&body=${encodeURIComponent(`${message}\n\n${url || ''}`)}`
-          : `sms:?body=${encodeURIComponent(`${message}\n\n${url || ''}`)}`;
-        Linking.openURL(smsUrl);
+        const shareUrl = url || 'https://alemdarteknik.com';
+        const waUrl = `https://wa.me/?text=${encodeURIComponent(`${message}\n\n${shareUrl}`)}`;
+        Linking.openURL(waUrl);
         onClose();
       },
     },
     {
-      id: 'mail',
-      icon: 'mail-outline',
-      label: 'Mail',
+      id: 'instagram',
+      icon: (
+        <View style={styles.iconWrapper}>
+          <InstagramIcon width={40} height={40} />
+        </View>
+      ),
+      label: 'Instagram',
       onPress: () => {
-        Linking.openURL(`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(`${message}\n\n${url || ''}`)}`);
+        Linking.openURL('instagram://app');
         onClose();
       },
     },
     {
-      id: 'share',
-      icon: 'share-social-outline',
-      label: 'More...',
-      onPress: shareViaNative,
+      id: 'facebook',
+      icon: (
+        <View style={styles.iconWrapper}>
+          <FacebookIcon width={40} height={40} />
+        </View>
+      ),
+      label: 'Facebook',
+      onPress: () => {
+        const shareUrl = url || 'https://alemdarteknik.com';
+        const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+        Linking.openURL(fbUrl);
+        onClose();
+      },
     },
   ];
 
   const textColor = isDark ? '#FFFFFF' : '#1A1A2E';
   const subTextColor = isDark ? 'rgba(255,255,255,0.6)' : 'rgba(26,26,46,0.6)';
-  const bgColor = isDark ? 'rgba(20,20,30,0.95)' : 'rgba(255,255,255,0.95)';
   const borderColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(26,26,46,0.08)';
 
   return (
@@ -141,10 +157,16 @@ export default function CustomShareMenu({ visible, onClose, title, message, url 
           styles.backdrop,
           {
             opacity: fadeAnim,
-            backgroundColor: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.4)',
           },
         ]}
       >
+        {/* ⭐ Full screen blur backdrop */}
+        <BlurView
+          intensity={80}
+          tint={isDark ? 'dark' : 'light'}
+          style={StyleSheet.absoluteFillObject}
+        />
+
         <Pressable style={styles.backdropPressable} onPress={onClose} />
 
         <Animated.View
@@ -164,14 +186,14 @@ export default function CustomShareMenu({ visible, onClose, title, message, url 
             style={[
               styles.blurContainer,
               {
-                backgroundColor: bgColor,
+                backgroundColor: isDark
+                  ? 'rgba(20,20,30,0.92)'
+                  : 'rgba(255,255,255,0.92)',
               },
             ]}
           >
-            {/* Drag Handle */}
             <View style={styles.dragHandle} />
 
-            {/* Header */}
             <View style={styles.header}>
               <Text style={[styles.headerTitle, { color: textColor }]}>
                 Share
@@ -183,31 +205,37 @@ export default function CustomShareMenu({ visible, onClose, title, message, url 
 
             <View style={[styles.divider, { backgroundColor: borderColor }]} />
 
-            {/* ⭐ Clean share options - matching context menu */}
-            {shareOptions.map((option, index) => (
-              <TouchableOpacity
-                key={option.id}
-                onPress={option.onPress}
-                activeOpacity={0.7}
-                style={[
-                  styles.menuItem,
-                  index < shareOptions.length - 1 && {
-                    borderBottomWidth: 0.5,
-                    borderBottomColor: borderColor,
-                  },
-                ]}
-              >
-                <Ionicons name={option.icon as any} size={22} color={textColor} />
-                <Text style={[styles.menuItemText, { color: textColor }]}>
-                  {option.label}
-                </Text>
-                <Ionicons name="chevron-forward" size={16} color={subTextColor} />
-              </TouchableOpacity>
-            ))}
+            <View style={styles.optionsGrid}>
+              {shareOptions.map((option) => (
+                <TouchableOpacity
+                  key={option.id}
+                  onPress={option.onPress}
+                  activeOpacity={0.7}
+                  style={styles.optionItem}
+                >
+                  {option.icon}
+                  <Text style={[styles.optionLabel, { color: textColor }]}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
 
-            {/* Close button */}
+            <View style={[styles.divider, { backgroundColor: borderColor }]} />
+
+            <TouchableOpacity
+              onPress={shareViaNative}
+              activeOpacity={0.7}
+              style={styles.moreOption}
+            >
+              <Ionicons name="share-social-outline" size={22} color={textColor} />
+              <Text style={[styles.moreText, { color: textColor }]}>More...</Text>
+              <Ionicons name="chevron-forward" size={16} color={subTextColor} />
+            </TouchableOpacity>
+
             <TouchableOpacity
               onPress={onClose}
+              activeOpacity={0.7}
               style={[styles.closeButton, { borderTopColor: borderColor }]}
             >
               <Text style={[styles.closeText, { color: textColor }]}>Cancel</Text>
@@ -228,19 +256,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menuContainer: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 24,
+    marginHorizontal: 0,
+    marginBottom: 0,
+    borderRadius: 0,
     overflow: 'hidden',
   },
   blurContainer: {
-    borderRadius: 24,
-    paddingHorizontal: 16,
+    borderRadius: 0,
+    paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 10,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 0,
   },
   dragHandle: {
     width: 40,
@@ -267,29 +294,50 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 0.5,
-    marginHorizontal: -16,
-    marginBottom: 10,
+    marginHorizontal: -20,
+    marginBottom: 16,
   },
-  menuItem: {
+  optionsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 16,
+    paddingHorizontal: 8,
+  },
+  optionItem: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  iconWrapper: {
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  optionLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  moreOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 4,
-    gap: 12,
+    gap: 14,
+    marginBottom: 4,
   },
-  menuItemText: {
-    fontSize: 14,
+  moreText: {
+    fontSize: 15,
     fontWeight: '500',
     flex: 1,
   },
   closeButton: {
-    paddingVertical: 10,
+    paddingVertical: 14,
     alignItems: 'center',
     borderTopWidth: 0.5,
     marginTop: 4,
   },
   closeText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
   },
 });
