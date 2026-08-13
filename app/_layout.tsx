@@ -20,6 +20,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -61,7 +62,7 @@ function RootLayoutNav() {
   const appBackground = isDark ? "#0d0d0d" : "#ffffff";
   const navigationTheme = isDark ? DarkTheme : DefaultTheme;
 
-  const [sheet, setSheet] = useState<string | null>(null);
+  const [, setSheet] = useState<string | null>(null);
 
   useEffect(() => {
     _set = setSheet;
@@ -71,72 +72,85 @@ function RootLayoutNav() {
   }, []);
 
   return (
-    <SafeAreaProvider style={{ flex: 1, backgroundColor: appBackground }}>
-      <LanguageProvider>
-        <CurrencyProvider>
-          <PersistQueryClientProvider
-            client={queryClient}
-            persistOptions={persistOptions}
-          >
-            <WishlistProvider>
-              <CartProvider>
-                <EasUpdateAlert />
-                <OfflineBanner />
-                <ThemeProvider
-                  value={{
-                    ...navigationTheme,
-                    colors: {
-                      ...navigationTheme.colors,
-                      background: appBackground,
-                      card: appBackground,
-                    },
-                  }}
-                >
-                  <Stack
-                    screenOptions={{
-                      contentStyle: { backgroundColor: appBackground },
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider style={{ flex: 1, backgroundColor: appBackground }}>
+        <LanguageProvider>
+          <CurrencyProvider>
+            <PersistQueryClientProvider
+              client={queryClient}
+              persistOptions={persistOptions}
+            >
+              <WishlistProvider>
+                <CartProvider>
+                  <EasUpdateAlert />
+                  <OfflineBanner />
+                  <ThemeProvider
+                    value={{
+                      ...navigationTheme,
+                      colors: {
+                        ...navigationTheme.colors,
+                        background: appBackground,
+                        card: appBackground,
+                      },
                     }}
                   >
-                    <Stack.Screen name="index" options={{ headerShown: false }} />
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                    <Stack.Screen
-                      name="product-detail"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen name="cart" options={{ headerShown: false }} />
-                    <Stack.Screen
-                      name="help-center"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="help/faq"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="address-edit"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="modal"
-                      options={{ presentation: "modal" }}
-                    />
-                    <Stack.Screen
-                      name="notifications"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen 
-                       name="model-detail" 
-                       options={{ headerShown: false }} />
-                   <Stack.Screen 
-                   name="model-upload" 
-                       options={{ headerShown: false }} />
-                  </Stack>
-                </ThemeProvider>
-              </CartProvider>
-            </WishlistProvider>
-          </PersistQueryClientProvider>
-        </CurrencyProvider>
-      </LanguageProvider>
-    </SafeAreaProvider>
+                    <Stack
+                      screenOptions={{
+                        contentStyle: { backgroundColor: appBackground },
+                      }}
+                    >
+                      <Stack.Screen
+                        name="index"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="(tabs)"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="product-detail"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="cart"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="help-center"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="help/faq"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="address-edit"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="modal"
+                        options={{ presentation: "modal" }}
+                      />
+                      <Stack.Screen
+                        name="notifications"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="model-detail"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="model-upload"
+                        options={{ headerShown: false }}
+                      />
+                    </Stack>
+                  </ThemeProvider>
+                </CartProvider>
+              </WishlistProvider>
+            </PersistQueryClientProvider>
+          </CurrencyProvider>
+        </LanguageProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
