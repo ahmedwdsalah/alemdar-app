@@ -134,6 +134,15 @@ export default function TabLayout() {
               ),
             }}
           />
+             <Tabs.Screen
+          name="models"
+          options={{
+           title: "3D Models",
+          tabBarIcon: ({ color }) => (
+          <Ionicons name="cube-outline" size={26} color={color} />
+    ),
+  }}
+/>
           <Tabs.Screen
             name="center"
             options={{

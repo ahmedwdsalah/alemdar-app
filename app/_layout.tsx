@@ -124,6 +124,12 @@ function RootLayoutNav() {
                       name="notifications"
                       options={{ headerShown: false }}
                     />
+                    <Stack.Screen 
+                       name="model-detail" 
+                       options={{ headerShown: false }} />
+                   <Stack.Screen 
+                   name="model-upload" 
+                       options={{ headerShown: false }} />
                   </Stack>
                 </ThemeProvider>
               </CartProvider>
