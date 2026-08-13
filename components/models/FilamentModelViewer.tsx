@@ -25,7 +25,7 @@ function Scene({ glbUrl }: Props) {
     },
   );
   const cameraManipulator = useCameraManipulator({
-    orbitHomePosition: [0, 0, 2.8],
+    orbitHomePosition: [0, 0, 5],
     targetPosition: [0, 0, 0],
     upVector: [0, 1, 0],
     zoomSpeed: [0.04],
