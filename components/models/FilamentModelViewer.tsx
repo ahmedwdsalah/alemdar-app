@@ -1,3 +1,4 @@
+import { useColorScheme } from "@/components/useColorScheme";
 import React from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import {
@@ -13,9 +14,10 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 interface Props {
   glbUrl: string;
+  backgroundColor?: string;
 }
 
-function Scene({ glbUrl }: Props) {
+function Scene({ glbUrl }: Pick<Props, "glbUrl">) {
   const model = useModel(
     { uri: glbUrl },
     {
@@ -81,9 +83,16 @@ function Scene({ glbUrl }: Props) {
   );
 }
 
-export default function FilamentModelViewer({ glbUrl }: Props) {
+export default function FilamentModelViewer({ glbUrl, backgroundColor }: Props) {
+  const isDark = useColorScheme() === "dark";
+
+  // ⭐ Falls back to a theme-matched background when no explicit
+  // backgroundColor is passed in. Pass backgroundColor as a prop
+  // to override this on a per-screen basis if you ever need to.
+  const resolvedBackground = backgroundColor ?? (isDark ? "#101928" : "#F1F3F6");
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: resolvedBackground }]}>
       <FilamentScene>
         <Scene glbUrl={glbUrl} />
       </FilamentScene>
@@ -92,12 +101,11 @@ export default function FilamentModelViewer({ glbUrl }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#101928" },
+  container: { flex: 1 },
   viewer: { flex: 1 },
   loading: {
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#101928",
   },
 });
