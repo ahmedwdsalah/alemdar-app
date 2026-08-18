@@ -10,6 +10,7 @@ import { BlurView } from "expo-blur";
 import { router } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   Keyboard,
@@ -49,12 +50,14 @@ export default function ModelsScreen() {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["55%"], []);
 
+  const [showSearch, setShowSearch] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<ModelCategory[]>([]);
   const [selectedSort, setSelectedSort] = useState("default");
 
   const [debouncedQuery] = useDebounce(query, 200);
   const isSearching = query.trim().length > 0;
+  const isDebouncing = isSearching && query.trim() !== debouncedQuery.trim();
 
   const t: Record<string, string> = {
     bg: isDark ? "#0A0A0A" : "#ffffff",
@@ -102,6 +105,21 @@ export default function ModelsScreen() {
     return list;
   }, [debouncedQuery, selectedCategories, selectedSort]);
 
+  const openModel = (item: (typeof SHOWCASE_MODELS)[number]) => {
+    router.push({ pathname: "/model-detail", params: { id: item.id } });
+  };
+
+  const openSearch = () => {
+    setShowSearch(true);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  };
+
+  const closeSearch = () => {
+    Keyboard.dismiss();
+    setQuery("");
+    setShowSearch(false);
+  };
+
   const openFilter = () => {
     Keyboard.dismiss();
     bottomSheetRef.current?.present();
@@ -119,44 +137,138 @@ export default function ModelsScreen() {
     []
   );
 
-  const headerTotalHeight = insets.top + HEADER_HEIGHT + 12 + SEARCH_ROW_HEIGHT + 12;
+  const headerTotalHeight =
+    insets.top + HEADER_HEIGHT + (showSearch ? 12 + SEARCH_ROW_HEIGHT + 12 : 12);
 
   return (
     <View style={[styles.container, { backgroundColor: t.bg }]}>
       <FlatList
+        key={isSearching ? "list" : "grid"}
         data={filteredModels}
         keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={{ gap: 12 }}
+        numColumns={isSearching ? 1 : 2}
+        columnWrapperStyle={isSearching ? undefined : { gap: 12 }}
         contentContainerStyle={{
-          paddingHorizontal: 20,
+          paddingHorizontal: isSearching ? 0 : 20,
           paddingTop: headerTotalHeight + 16,
           paddingBottom: insets.bottom + 120,
-          gap: 12,
+          gap: isSearching ? 0 : 12,
         }}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Text style={{ fontSize: 40 }}>🔍</Text>
-            <Text style={{ color: t.subtext, fontSize: 15 }}>
-              {isSearching ? `No results for "${debouncedQuery}"` : "No models in this category yet."}
-            </Text>
-          </View>
+        ItemSeparatorComponent={
+          isSearching
+            ? () => <View style={{ height: 1, backgroundColor: t.border, marginLeft: 86 }} />
+            : undefined
         }
-        renderItem={({ item }) => (
-          <Pressable
-            style={[styles.card, { borderColor: t.cardBorder }]}
-            onPress={() => router.push({ pathname: "/model-detail", params: { id: item.id } })}
+        ListHeaderComponent={
+          <Animated.View
+            key={isSearching ? "results-header" : "idle-header"}
+            entering={FadeIn.duration(250)}
+            exiting={FadeOut.duration(200)}
           >
-            <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} resizeMode="cover" />
-            <View style={styles.cardBody}>
-              <Text style={[styles.cardName, { color: t.text }]} numberOfLines={1}>{item.name}</Text>
-              <Text style={[styles.cardMeta, { color: t.subtext }]} numberOfLines={1}>{item.material}</Text>
-              <Text style={[styles.cardPrice, { color: t.text }]}>${item.price.toFixed(2)}</Text>
+            {!isSearching ? null : (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  paddingHorizontal: 16,
+                  paddingTop: 4,
+                  paddingBottom: 8,
+                }}
+              >
+                <Text style={{ color: t.text, fontSize: 15, fontWeight: "600" }}>Results</Text>
+                <Text style={{ color: t.subtext, fontSize: 13 }}>
+                  {isDebouncing ? "…" : `${filteredModels.length} results`}
+                </Text>
+              </View>
+            )}
+          </Animated.View>
+        }
+        ListEmptyComponent={() =>
+          isSearching && isDebouncing ? (
+            <View style={styles.emptyState}>
+              <ActivityIndicator size="large" color={t.accent} />
+              <Text style={{ color: t.subtext, fontSize: 13 }}>Searching...</Text>
             </View>
-          </Pressable>
-        )}
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={{ fontSize: 40 }}>🔍</Text>
+              <Text style={{ color: t.subtext, fontSize: 15 }}>
+                {isSearching ? `No results for "${debouncedQuery}"` : "No models in this category yet."}
+              </Text>
+            </View>
+          )
+        }
+        renderItem={({ item }) => {
+          if (!isSearching) {
+            return (
+              <Pressable
+                style={[styles.card, { backgroundColor: t.sheetBg }]}
+                onPress={() => openModel(item)}
+              >
+                <View style={styles.cardImageWrap}>
+                  <Image source={{ uri: item.thumbnail }} style={styles.cardImage} resizeMode="cover" />
+                  <View style={styles.cardPriceTag}>
+                    <Text style={styles.cardPriceText}>${item.price.toFixed(2)}</Text>
+                  </View>
+                </View>
+                <View style={styles.cardBody}>
+                  <Text style={[styles.cardName, { color: t.text }]} numberOfLines={1}>{item.name}</Text>
+                  <View style={styles.cardMetaRow}>
+                    <Ionicons name="cube-outline" size={11} color={t.subtext} />
+                    <Text style={[styles.cardMeta, { color: t.subtext }]} numberOfLines={1}>{item.material}</Text>
+                  </View>
+                </View>
+              </Pressable>
+            );
+          }
+
+          return (
+            <TouchableOpacity
+              onPress={() => openModel(item)}
+              activeOpacity={0.7}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                backgroundColor: t.bg,
+                gap: 14,
+              }}
+            >
+              <View
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 12,
+                  backgroundColor: t.sheetBg,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                }}
+              >
+                <Image
+                  source={{ uri: item.thumbnail }}
+                  style={{ width: "100%", height: "100%" }}
+                  resizeMode="cover"
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text numberOfLines={2} style={{ fontSize: 15, fontWeight: "500", color: t.text }}>
+                  {item.name}
+                </Text>
+                <Text style={{ fontSize: 13, fontWeight: "600", color: t.subtext, marginTop: 2 }}>
+                  {item.material}
+                </Text>
+              </View>
+              <Text style={{ fontSize: 14, fontWeight: "700", color: t.text }}>
+                ${item.price.toFixed(2)}
+              </Text>
+            </TouchableOpacity>
+          );
+        }}
       />
 
       <BlurView
@@ -166,46 +278,56 @@ export default function ModelsScreen() {
       >
         <View style={styles.headerRow}>
           <Text style={[styles.title, { color: t.text }]}>3D Models</Text>
-          <Pressable style={styles.uploadPill} onPress={() => router.push("/model-upload")}>
-            <Ionicons name="cloud-upload-outline" size={15} color="#fff" />
-            <Text style={styles.uploadPillText}>Upload</Text>
-          </Pressable>
+
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              onPress={showSearch ? closeSearch : openSearch}
+              style={styles.iconButton}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name={showSearch ? "close" : "search"} size={20} color={t.text} />
+            </TouchableOpacity>
+
+            <Pressable style={styles.uploadPill} onPress={() => router.push("/model-upload")}>
+              <Ionicons name="cloud-upload-outline" size={15} color="#fff" />
+              <Text style={styles.uploadPillText}>Upload</Text>
+            </Pressable>
+          </View>
         </View>
 
-        <View style={[styles.searchRow, { marginTop: 12 }]}>
+        {showSearch && (
           <Animated.View
-            layout={LinearTransition.duration(250)}
-            style={[styles.searchBar, { backgroundColor: t.inputBg, borderColor: t.border, height: SEARCH_ROW_HEIGHT }]}
+            entering={FadeIn.duration(200)}
+            exiting={FadeOut.duration(150)}
+            style={[styles.searchRow, { marginTop: 12 }]}
           >
-            <Ionicons name="search" size={18} color={t.subtext} style={{ marginRight: 10 }} />
-            <TextInput
-              ref={inputRef}
-              style={{ flex: 1, fontSize: 15, color: t.text }}
-              placeholder="Search models..."
-              placeholderTextColor={t.subtext}
-              value={query}
-              onChangeText={setQuery}
-              returnKeyType="search"
-            />
-            <TouchableOpacity onPress={openFilter} style={{ marginLeft: 8 }}>
-              <Ionicons name="options-outline" size={20} color={t.accent} />
-            </TouchableOpacity>
-          </Animated.View>
-
-          {isSearching && (
-            <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)}>
-              <TouchableOpacity
-                onPress={() => {
-                  setQuery("");
-                  inputRef.current?.blur();
-                }}
-                hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
-              >
-                <Text style={{ color: t.accent, fontSize: 15, fontWeight: "600" }}>Cancel</Text>
+            <Animated.View
+              layout={LinearTransition.duration(250)}
+              style={[styles.searchBar, { backgroundColor: t.inputBg, borderColor: t.border, height: SEARCH_ROW_HEIGHT }]}
+            >
+              <Ionicons name="search" size={18} color={t.subtext} style={{ marginRight: 10 }} />
+              <TextInput
+                ref={inputRef}
+                style={{ flex: 1, fontSize: 15, color: t.text }}
+                placeholder="Search models..."
+                placeholderTextColor={t.subtext}
+                value={query}
+                onChangeText={setQuery}
+                returnKeyType="search"
+              />
+              <TouchableOpacity onPress={openFilter} style={{ marginLeft: 8 }}>
+                <Ionicons name="options-outline" size={20} color={t.accent} />
               </TouchableOpacity>
             </Animated.View>
-          )}
-        </View>
+
+            <TouchableOpacity
+              onPress={closeSearch}
+              hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+            >
+              <Text style={{ color: t.accent, fontSize: 15, fontWeight: "600" }}>Cancel</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
       </BlurView>
 
       <BottomSheetModal
@@ -308,6 +430,17 @@ const styles = StyleSheet.create({
     height: HEADER_HEIGHT,
   },
   title: { fontSize: 26, fontWeight: "800", letterSpacing: -0.5 },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  iconButton: {
+    width: 36,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   uploadPill: {
     flexDirection: "row",
     alignItems: "center",
@@ -329,14 +462,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
 
-  emptyState: { alignItems: "center", marginTop: 80, gap: 12 },
+  emptyState: { alignItems: "center", marginTop: 80, gap: 12, paddingHorizontal: 20 },
 
-  card: { flex: 1, borderRadius: 16, borderWidth: 1, overflow: "hidden" },
-  thumbnail: { width: "100%", aspectRatio: 1, backgroundColor: "#00000006" },
-  cardBody: { padding: 10, gap: 2 },
-  cardName: { fontSize: 13, fontWeight: "700" },
+  card: { flex: 1, borderRadius: 20, overflow: "hidden" },
+  cardImageWrap: { padding: 8 },
+  cardImage: { width: "100%", aspectRatio: 1, borderRadius: 14, backgroundColor: "#00000006" },
+  cardPriceTag: {
+    position: "absolute",
+    bottom: 16,
+    right: 16,
+    backgroundColor: "#FF6B00",
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  cardPriceText: { color: "#fff", fontSize: 12, fontWeight: "800" },
+  cardBody: { paddingHorizontal: 12, paddingBottom: 12, gap: 4 },
+  cardName: { fontSize: 14, fontWeight: "700" },
+  cardMetaRow: { flexDirection: "row", alignItems: "center", gap: 4 },
   cardMeta: { fontSize: 11 },
-  cardPrice: { fontSize: 13, fontWeight: "700", marginTop: 2 },
 
   resetBtn: {
     flex: 1,

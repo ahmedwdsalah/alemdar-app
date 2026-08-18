@@ -35,6 +35,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useDebounce } from "use-debounce";
 
 const PAGE_SIZE = 20;
+const HEADER_ROW_HEIGHT = 56;
 const SEARCH_ROW_HEIGHT = 48;
 
 const sortOptions = [
@@ -56,9 +57,12 @@ export default function CategoryDetail() {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["55%"], []);
 
+  // ⭐ Search bar is hidden until the header icon is tapped
+  const [showSearch, setShowSearch] = useState(false);
   const [query, setQuery] = useState("");
   const [debouncedQuery] = useDebounce(query, 200);
   const isSearching = query.trim().length > 0;
+  const isDebouncing = isSearching && query.trim() !== debouncedQuery.trim();
 
   const [selectedSort, setSelectedSort] = useState("default");
   const [minPrice, setMinPrice] = useState("");
@@ -92,6 +96,17 @@ export default function CategoryDetail() {
   const sheetBg = isDark ? "#161616" : "#FFFFFF";
   const sheetInnerBg = isDark ? "#1E1E1E" : "#F5F5F5";
 
+  const openSearch = () => {
+    setShowSearch(true);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  };
+
+  const closeSearch = () => {
+    Keyboard.dismiss();
+    setQuery("");
+    setShowSearch(false);
+  };
+
   const openFilter = () => {
     Keyboard.dismiss();
     bottomSheetRef.current?.present();
@@ -111,9 +126,7 @@ export default function CategoryDetail() {
     []
   );
 
-  // ⭐ Client-side filtering over whatever pages have loaded so far.
-  // NOTE: assumes each product has `price` (number) and `in_stock` (boolean).
-  // Rename below if your real fields differ.
+  // ⭐ Filtered products
   const filteredProducts = useMemo(() => {
     let list = [...products];
 
@@ -127,10 +140,10 @@ export default function CategoryDetail() {
     const min = parseFloat(minPrice);
     const max = parseFloat(maxPrice);
     if (!isNaN(min)) {
-      list = list.filter((item: any) => (item.price ?? 0) >= min);
+      list = list.filter((item: any) => (Number(item.price) ?? 0) >= min);
     }
     if (!isNaN(max)) {
-      list = list.filter((item: any) => (item.price ?? 0) <= max);
+      list = list.filter((item: any) => (Number(item.price) ?? 0) <= max);
     }
 
     if (inStockOnly) {
@@ -138,15 +151,25 @@ export default function CategoryDetail() {
     }
 
     if (selectedSort === "price-low") {
-      list.sort((a: any, b: any) => (a.price ?? 0) - (b.price ?? 0));
+      list.sort((a: any, b: any) => (Number(a.price) ?? 0) - (Number(b.price) ?? 0));
     } else if (selectedSort === "price-high") {
-      list.sort((a: any, b: any) => (b.price ?? 0) - (a.price ?? 0));
+      list.sort((a: any, b: any) => (Number(b.price) ?? 0) - (Number(a.price) ?? 0));
     }
 
     return list;
   }, [products, debouncedQuery, minPrice, maxPrice, inStockOnly, selectedSort]);
 
-  const headerTotalHeight = insets.top + 56 + 12 + SEARCH_ROW_HEIGHT + 12;
+  // ⭐ Helper to format price (string or number)
+  const formatPrice = (price: any) => {
+    const numPrice = Number(price);
+    return isNaN(numPrice) ? "$0.00" : `$${numPrice.toFixed(2)}`;
+  };
+
+  // ⭐ Header height with minimal padding
+  const headerTotalHeight =
+    insets.top +
+    HEADER_ROW_HEIGHT +
+    (showSearch ? 12 + SEARCH_ROW_HEIGHT + 8 : 4); // ⭐ Reduced spacing
 
   return (
     <>
@@ -158,54 +181,148 @@ export default function CategoryDetail() {
       >
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-        {isLoading ? (
-          <View style={styles.center}>
-            <ActivityIndicator color={meta.accentColor} />
-          </View>
-        ) : (
-          <FlatList
-            data={isError ? [] : filteredProducts}
-            keyExtractor={(item) => `${item.section}-${item.id}`}
-            numColumns={2}
-            columnWrapperStyle={{ gap: 12, paddingHorizontal: 16 }}
-            contentContainerStyle={{
-              flexGrow: isError || filteredProducts.length === 0 ? 1 : undefined,
-              paddingBottom: 40,
-              gap: 12,
-              paddingTop: headerTotalHeight + 16,
-            }}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-            showsVerticalScrollIndicator={false}
-            refreshing={isRefetching && !isFetchingNextPage}
-            onRefresh={() => {
-              void refetch();
-            }}
-            renderItem={({ item }) => (
-              <View style={{ flex: 1 }}>
-                <ProductCard
-                  product={item}
-                  sectionTitle={meta.title}
-                  accentColor={meta.accentColor}
-                  fluid
-                />
-              </View>
-            )}
-            onEndReachedThreshold={0.4}
-            onEndReached={() => {
-              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-            }}
-            ListFooterComponent={
-              isFetchingNextPage ? (
-                <ActivityIndicator
-                  color={meta.accentColor}
-                  style={{ marginVertical: 16 }}
-                />
-              ) : null
+        <FlatList
+          // ⭐ Force a remount when the layout mode changes
+          key={isSearching ? "list" : "grid"}
+          data={isError ? [] : filteredProducts}
+          keyExtractor={(item) => `${item.section}-${item.id}`}
+          numColumns={isSearching ? 1 : 2}
+          columnWrapperStyle={isSearching ? undefined : { gap: 12, paddingHorizontal: 16 }}
+          contentContainerStyle={{
+            flexGrow: isError || filteredProducts.length === 0 ? 1 : undefined,
+            paddingBottom: 40,
+            gap: isSearching ? 0 : 12,
+            // ⭐ Minimal padding - products start right under the header
+            paddingTop: headerTotalHeight,
+          }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          showsVerticalScrollIndicator={false}
+          refreshing={isRefetching && !isFetchingNextPage}
+          onRefresh={() => {
+            void refetch();
+          }}
+          // ⭐ Item separator for list mode
+          ItemSeparatorComponent={
+            isSearching
+              ? () => <View style={{ height: 1, backgroundColor: inputBorder, marginLeft: 86 }} />
+              : undefined
+          }
+          // ⭐ ListHeaderComponent with results count
+          ListHeaderComponent={
+            <Animated.View
+              key={isSearching ? "results-header" : "idle-header"}
+              entering={FadeIn.duration(250)}
+              exiting={FadeOut.duration(200)}
+            >
+              {!isSearching ? null : (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    paddingHorizontal: 16,
+                    paddingTop: 4,
+                    paddingBottom: 8,
+                  }}
+                >
+                  <Text style={{ color: textColor, fontSize: 15, fontWeight: "600" }}>Results</Text>
+                  <Text style={{ color: subText, fontSize: 13 }}>
+                    {isDebouncing ? "…" : `${filteredProducts.length} results`}
+                  </Text>
+                </View>
+              )}
+            </Animated.View>
+          }
+          renderItem={({ item }) => {
+            if (!isSearching) {
+              // ⭐ 2-COLUMN GRID
+              return (
+                <View style={{ flex: 1 }}>
+                  <ProductCard
+                    product={item}
+                    sectionTitle={meta.title}
+                    accentColor={meta.accentColor}
+                    fluid
+                  />
+                </View>
+              );
             }
-            ListEmptyComponent={
+
+            // ⭐ SINGLE COLUMN LIST
+            return (
+              <TouchableOpacity
+                onPress={() => {
+                  // Navigate to product detail
+                }}
+                activeOpacity={0.7}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  backgroundColor: bg,
+                  gap: 14,
+                }}
+              >
+                <View
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: 12,
+                    backgroundColor: sheetInnerBg,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                  }}
+                >
+                  {item.image_filename ? (
+                    <CachedImage
+                      source={{ uri: item.image_filename }}
+                      style={{ width: "100%", height: "100%" }}
+                      contentFit="cover"
+                      recyclingKey={String(item.id)}
+                    />
+                  ) : (
+                    <Ionicons name="cube-outline" size={20} color={subText} />
+                  )}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text numberOfLines={2} style={{ fontSize: 15, fontWeight: "500", color: textColor }}>
+                    {item.name}
+                  </Text>
+                  <Text style={{ fontSize: 13, fontWeight: "600", color: subText, marginTop: 2 }}>
+                    {meta.title}
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 14, fontWeight: "700", color: textColor }}>
+                  {formatPrice(item.price)}
+                </Text>
+              </TouchableOpacity>
+            );
+          }}
+          onEndReachedThreshold={0.4}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+          }}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <ActivityIndicator
+                color={meta.accentColor}
+                style={{ marginVertical: 16 }}
+              />
+            ) : null
+          }
+          ListEmptyComponent={
+            isSearching && isDebouncing ? (
               <View style={styles.center}>
-                <Text style={{ color: subText }}>
+                <ActivityIndicator size="large" color={meta.accentColor} />
+                <Text style={{ color: subText, fontSize: 13, marginTop: 12 }}>Searching...</Text>
+              </View>
+            ) : (
+              <View style={styles.center}>
+                <Text style={{ fontSize: 40 }}>🔍</Text>
+                <Text style={{ color: subText, fontSize: 15, marginTop: 12 }}>
                   {isError
                     ? "Couldn't load products. Pull to retry."
                     : isSearching
@@ -213,9 +330,9 @@ export default function CategoryDetail() {
                     : "No products in this category."}
                 </Text>
               </View>
-            }
-          />
-        )}
+            )
+          }
+        />
 
         {/* ⭐ FLOATING BLUR HEADER */}
         <BlurView
@@ -266,49 +383,59 @@ export default function CategoryDetail() {
               )}
             </View>
 
-            <View style={{ width: 40 }} />
+            {/* ⭐ Search icon toggles search */}
+            <TouchableOpacity
+              onPress={showSearch ? closeSearch : openSearch}
+              style={styles.searchToggleButton}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons
+                name={showSearch ? "close" : "search"}
+                size={22}
+                color={textColor}
+              />
+            </TouchableOpacity>
           </View>
 
           {/* ⭐ SEARCH ROW */}
-          <View style={[styles.searchRow, { paddingHorizontal: 16 }]}>
+          {showSearch && (
             <Animated.View
-              layout={LinearTransition.duration(250)}
-              style={[
-                styles.searchBar,
-                { backgroundColor: inputBg, borderColor: inputBorder, height: SEARCH_ROW_HEIGHT },
-              ]}
+              entering={FadeIn.duration(200)}
+              exiting={FadeOut.duration(150)}
+              style={[styles.searchRow, { paddingHorizontal: 16 }]}
             >
-              <Ionicons name="search" size={18} color={subText} style={{ marginRight: 10 }} />
-              <TextInput
-                ref={inputRef}
-                style={{ flex: 1, fontSize: 15, color: textColor }}
-                placeholder="Search this category..."
-                placeholderTextColor={subText}
-                value={query}
-                onChangeText={setQuery}
-                returnKeyType="search"
-              />
-              <TouchableOpacity onPress={openFilter} style={{ marginLeft: 8 }}>
-                <Ionicons name="options-outline" size={20} color={meta.accentColor} />
-              </TouchableOpacity>
-            </Animated.View>
-
-            {isSearching && (
-              <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setQuery("");
-                    inputRef.current?.blur();
-                  }}
-                  hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
-                >
-                  <Text style={{ color: meta.accentColor, fontSize: 15, fontWeight: "600" }}>
-                    Cancel
-                  </Text>
+              <Animated.View
+                layout={LinearTransition.duration(250)}
+                style={[
+                  styles.searchBar,
+                  { backgroundColor: inputBg, borderColor: inputBorder, height: SEARCH_ROW_HEIGHT },
+                ]}
+              >
+                <Ionicons name="search" size={18} color={subText} style={{ marginRight: 10 }} />
+                <TextInput
+                  ref={inputRef}
+                  style={{ flex: 1, fontSize: 15, color: textColor }}
+                  placeholder="Search this category..."
+                  placeholderTextColor={subText}
+                  value={query}
+                  onChangeText={setQuery}
+                  returnKeyType="search"
+                />
+                <TouchableOpacity onPress={openFilter} style={{ marginLeft: 8 }}>
+                  <Ionicons name="options-outline" size={20} color={meta.accentColor} />
                 </TouchableOpacity>
               </Animated.View>
-            )}
-          </View>
+
+              <TouchableOpacity
+                onPress={closeSearch}
+                hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+              >
+                <Text style={{ color: meta.accentColor, fontSize: 15, fontWeight: "600" }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
+          )}
         </BlurView>
       </SafeAreaView>
 
@@ -446,8 +573,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 16,
+    height: HEADER_ROW_HEIGHT,
   },
   backButton: { padding: 4, marginRight: 8 },
+  searchToggleButton: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   categoryIcon: {
     width: 36,
     height: 36,
