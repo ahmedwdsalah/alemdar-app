@@ -16,7 +16,10 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.alemdar.app",
       "infoPlist": {
-        "CFBundleLocalizations": ["en", "tr"],
+        "CFBundleLocalizations": [
+          "en",
+          "tr"
+        ],
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -58,11 +61,18 @@
         "expo-localization",
         {
           "supportedLocales": {
-            "ios": ["en", "tr"],
-            "android": ["en", "tr"]
+            "ios": [
+              "en",
+              "tr"
+            ],
+            "android": [
+              "en",
+              "tr"
+            ]
           }
         }
-      ]
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true
