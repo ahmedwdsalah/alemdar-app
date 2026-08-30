@@ -5,17 +5,17 @@ import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import { useEffect, useRef } from 'react';
 import {
-    Animated,
-    Dimensions,
-    Linking,
-    Modal,
-    Pressable,
-    Share,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  Animated,
+  Dimensions,
+  Linking,
+  Modal,
+  Pressable,
+  Share,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from 'react-native';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -94,15 +94,10 @@ export default function CustomShareMenu({ visible, onClose, title, message, url 
     onClose();
   };
 
-  // ⭐ Clean icons — no backgrounds
   const shareOptions: ShareOption[] = [
     {
       id: 'whatsapp',
-      icon: (
-        <View style={styles.iconWrapper}>
-          <Ionicons name="logo-whatsapp" size={40} color="#25D366" />
-        </View>
-      ),
+      icon: <Ionicons name="logo-whatsapp" size={24} color="#25D366" />,
       label: 'WhatsApp',
       onPress: () => {
         const shareUrl = url || 'https://alemdarteknik.com';
@@ -113,11 +108,7 @@ export default function CustomShareMenu({ visible, onClose, title, message, url 
     },
     {
       id: 'instagram',
-      icon: (
-        <View style={styles.iconWrapper}>
-          <InstagramIcon width={40} height={40} />
-        </View>
-      ),
+      icon: <InstagramIcon width={24} height={24} />,
       label: 'Instagram',
       onPress: () => {
         Linking.openURL('instagram://app');
@@ -126,11 +117,7 @@ export default function CustomShareMenu({ visible, onClose, title, message, url 
     },
     {
       id: 'facebook',
-      icon: (
-        <View style={styles.iconWrapper}>
-          <FacebookIcon width={40} height={40} />
-        </View>
-      ),
+      icon: <FacebookIcon width={24} height={24} />,
       label: 'Facebook',
       onPress: () => {
         const shareUrl = url || 'https://alemdarteknik.com';
@@ -146,38 +133,15 @@ export default function CustomShareMenu({ visible, onClose, title, message, url 
   const borderColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(26,26,46,0.08)';
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="none"
-      onRequestClose={onClose}
-    >
-      <Animated.View
-        style={[
-          styles.backdrop,
-          {
-            opacity: fadeAnim,
-          },
-        ]}
-      >
-        {/* ⭐ Full screen blur backdrop */}
-        <BlurView
-          intensity={80}
-          tint={isDark ? 'dark' : 'light'}
-          style={StyleSheet.absoluteFillObject}
-        />
-
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]}>
+        <BlurView intensity={80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
         <Pressable style={styles.backdropPressable} onPress={onClose} />
 
         <Animated.View
           style={[
             styles.menuContainer,
-            {
-              transform: [
-                { translateY: slideAnim },
-                { scale: scaleAnim },
-              ],
-            },
+            { transform: [{ translateY: slideAnim }, { scale: scaleAnim }] },
           ]}
         >
           <BlurView
@@ -185,59 +149,47 @@ export default function CustomShareMenu({ visible, onClose, title, message, url 
             tint={isDark ? 'dark' : 'light'}
             style={[
               styles.blurContainer,
-              {
-                backgroundColor: isDark
-                  ? 'rgba(20,20,30,0.92)'
-                  : 'rgba(255,255,255,0.92)',
-              },
+              { backgroundColor: isDark ? 'rgba(20,20,30,0.92)' : 'rgba(255,255,255,0.92)' },
             ]}
           >
             <View style={styles.dragHandle} />
 
             <View style={styles.header}>
-              <Text style={[styles.headerTitle, { color: textColor }]}>
-                Share
-              </Text>
-              <Text style={[styles.headerSubtitle, { color: subTextColor }]}>
+              <Text style={[styles.headerTitle, { color: textColor }]}>Share</Text>
+              <Text style={[styles.headerSubtitle, { color: subTextColor }]} numberOfLines={1}>
                 {title}
               </Text>
             </View>
 
-            <View style={[styles.divider, { backgroundColor: borderColor }]} />
-
-            <View style={styles.optionsGrid}>
-              {shareOptions.map((option) => (
+            <View style={[styles.listCard, { borderColor }]}>
+              {shareOptions.map((option, index) => (
                 <TouchableOpacity
                   key={option.id}
                   onPress={option.onPress}
-                  activeOpacity={0.7}
-                  style={styles.optionItem}
+                  activeOpacity={0.6}
+                  style={[
+                    styles.listRow,
+                    index !== shareOptions.length - 1 && { borderBottomWidth: 0.5, borderBottomColor: borderColor },
+                  ]}
                 >
                   {option.icon}
-                  <Text style={[styles.optionLabel, { color: textColor }]}>
-                    {option.label}
-                  </Text>
+                  <Text style={[styles.listLabel, { color: textColor }]}>{option.label}</Text>
+                  <Ionicons name="chevron-forward" size={16} color={subTextColor} />
                 </TouchableOpacity>
               ))}
             </View>
 
-            <View style={[styles.divider, { backgroundColor: borderColor }]} />
-
             <TouchableOpacity
               onPress={shareViaNative}
-              activeOpacity={0.7}
-              style={styles.moreOption}
+              activeOpacity={0.6}
+              style={[styles.listCard, styles.listRow, { borderColor, marginTop: 10 }]}
             >
               <Ionicons name="share-social-outline" size={22} color={textColor} />
-              <Text style={[styles.moreText, { color: textColor }]}>More...</Text>
+              <Text style={[styles.listLabel, { color: textColor }]}>More options</Text>
               <Ionicons name="chevron-forward" size={16} color={subTextColor} />
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={onClose}
-              activeOpacity={0.7}
-              style={[styles.closeButton, { borderTopColor: borderColor }]}
-            >
+            <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={styles.closeButton}>
               <Text style={[styles.closeText, { color: textColor }]}>Cancel</Text>
             </TouchableOpacity>
           </BlurView>
@@ -248,19 +200,9 @@ export default function CustomShareMenu({ visible, onClose, title, message, url 
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  backdropPressable: {
-    flex: 1,
-  },
-  menuContainer: {
-    marginHorizontal: 0,
-    marginBottom: 0,
-    borderRadius: 0,
-    overflow: 'hidden',
-  },
+  backdrop: { flex: 1, justifyContent: 'flex-end' },
+  backdropPressable: { flex: 1 },
+  menuContainer: { marginHorizontal: 0, marginBottom: 0, borderRadius: 0, overflow: 'hidden' },
   blurContainer: {
     borderRadius: 0,
     paddingHorizontal: 20,
@@ -278,66 +220,22 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     opacity: 0.5,
   },
-  header: {
-    alignItems: 'center',
-    marginBottom: 16,
+  header: { alignItems: 'center', marginBottom: 16 },
+  headerTitle: { fontSize: 18, fontWeight: '700', marginBottom: 4 },
+  headerSubtitle: { fontSize: 13, fontWeight: '400', textAlign: 'center', paddingHorizontal: 20 },
+  listCard: {
+    borderRadius: 14,
+    borderWidth: 0.5,
+    overflow: 'hidden',
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    fontWeight: '400',
-    textAlign: 'center',
-  },
-  divider: {
-    height: 0.5,
-    marginHorizontal: -20,
-    marginBottom: 16,
-  },
-  optionsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 16,
-    paddingHorizontal: 8,
-  },
-  optionItem: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  iconWrapper: {
-    width: 56,
-    height: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  optionLabel: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  moreOption: {
+  listRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 4,
     gap: 14,
-    marginBottom: 4,
-  },
-  moreText: {
-    fontSize: 15,
-    fontWeight: '500',
-    flex: 1,
-  },
-  closeButton: {
     paddingVertical: 14,
-    alignItems: 'center',
-    borderTopWidth: 0.5,
-    marginTop: 4,
+    paddingHorizontal: 14,
   },
-  closeText: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
+  listLabel: { fontSize: 15, fontWeight: '500', flex: 1 },
+  closeButton: { paddingVertical: 14, alignItems: 'center', marginTop: 12 },
+  closeText: { fontSize: 15, fontWeight: '600' },
 });

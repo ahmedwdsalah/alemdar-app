@@ -12,36 +12,39 @@ export const FEED_ITEMS: FeedItem[] = [
   {
     id: "feed-1",
     type: "video",
-    uri: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    uri: "https://res.cloudinary.com/tsadltdd/video/upload/v1788123165/WhatsApp_Video_2026-08-28_at_12.11.46.mp4",
     caption: "Testing the feed with a sample clip 🎬",
     author: "@alemdarteknik",
   },
+
   {
     id: "feed-2",
-    type: "image",
-    uri: "https://images.unsplash.com/photo-1631376178637-392efc9e356b?w=900&h=1600&fit=crop&q=80",
-    caption: "New Arduino kits just landed",
+    type: "video",
+    uri: "https://res.cloudinary.com/tsadltdd/video/upload/v1788123206/WhatsApp_Video_2026-08-28_at_12.11.39.mp4",
+    caption: "Behind the scenes at the shop",
     author: "@alemdarteknik",
   },
   {
     id: "feed-3",
     type: "video",
-    uri: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-    caption: "Behind the scenes at the shop",
-    author: "@alemdarteknik",
-  },
-  {
-    id: "feed-4",
-    type: "image",
-    uri: "https://images.unsplash.com/photo-1765256931845-56da0f7db9cb?w=900&h=1600&fit=crop&q=80",
+    uri: "https://res.cloudinary.com/tsadltdd/video/upload/q_auto,f_auto,w_1080,c_limit/v1787911361/1.mp4",
     caption: "Solar panel restock 🔆",
     author: "@alemdarteknik",
   },
+ 
+ {
+    id: "feed-4",
+    type: "video",
+    uri: "https://res.cloudinary.com/tsadltdd/video/upload/q_auto,f_auto,w_1080,c_limit/v1787911425/2.mp4",
+    caption: "Engineering the future, one build at a time",
+    author: "@alemdarteknik",
+  },
+
   {
     id: "feed-5",
     type: "video",
-    uri: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    caption: "Quick soldering tip",
+    uri: "https://res.cloudinary.com/tsadltdd/video/upload/q_auto,f_auto,w_1080,c_limit/v1787909493/WhatsApp_Video_2026-08-28_at_12.11.31.mp4",
+    caption: "Engineering the future, one build at a time",
     author: "@alemdarteknik",
   },
 ];
