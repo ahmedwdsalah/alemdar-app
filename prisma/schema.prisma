@@ -1,8 +1,9 @@
 generator client {
   provider        = "prisma-client"
   output          = "../generated/prisma"
+  runtime         = "workerd"
   previewFeatures = ["partialIndexes"]
-  moduleFormat    = "cjs"
+  moduleFormat    = "esm"
 }
 
 datasource db {

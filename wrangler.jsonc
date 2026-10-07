@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "alemdar-app-api",
+  "main": "worker.ts",
+  "compatibility_date": "2026-10-07",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [{ "pattern": "serverapp.alemdarteknik.com", "custom_domain": true }],
+  "vars": {
+    "NODE_ENV": "production"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

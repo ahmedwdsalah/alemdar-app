@@ -1,5 +1,7 @@
-[] abdo : Explore the codebase: package.json, pnpm install, pnpm-lock.yaml, node_moudles, .gitignore,
-[] abdo: create a branch named feat/abdo and git push to your branch not main
+[] abdo:refactor @offlineBanner.tsx to @react-native-community/netinfo and test all edge cases and solve the true negitive
+[] abdo: refactor the homescreen: remove all the soical media links and quick fix section and carousel and add products grid
+[x] abdo : Explore the codebase: package.json, pnpm install, pnpm-lock.yaml, node_moudles, .gitignore,
+[x] abdo: create a branch named feat/abdo and git push to your branch not main
 [x] save the cart information
 [x] lamine: remove the brand and make the images, select a couple of brands from the database
 [x] lamine: redesign the categories: replace the text and box with real images in box instead
@@ -9,7 +11,7 @@
 [x] lamine: on offline disable products details page
 [x] lamine: on back offline show a banner showing the back online
 [x] lamine: on offline search should say you are offline
-[] lamine: make the navbar blurred
+[x] lamine: make the navbar blurred
 [x] lamine: delelte the postal code, let the db and api accept null as we agreed, and switch 'city' to predefind list like website
 [x] lamine: handle the app UI/UX if all screen if the db is down ( provide great animation and messages and offline cached products) test it heavily
 [x] iman: add /docs/list1/pdf, /docs/list2.pdf to alemdarhizmet : extract all the data from the pdfs, put the data in json, create search bar
@@ -20,4 +22,3 @@
 [x] add debouncing to the search 250ms
 [x] display the images in the cart
 [x] light/dark swticher
-mkj
