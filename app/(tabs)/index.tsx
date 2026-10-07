@@ -2,18 +2,22 @@ import FacebookIcon from "@/assets/icons/facebook.svg";
 import GoogleMapIcon from "@/assets/icons/google_map.svg";
 import InstagramIcon from "@/assets/icons/instagram.svg";
 import { CachedImage } from "@/components/CachedImage";
+import CurrencySwitcher from '@/components/CurrencySwitcher';
 import { HomeProductSection } from "@/components/HomeProductSection";
 import { Text } from "@/components/Themed";
 import { useCart } from "@/context/CartContext";
 import { useOfflineBannerVisible } from "@/hooks/useOfflineBanner";
+import { categoryIcons } from "@/lib/category-icons";
 import { t, useLocale } from "@/lib/i18n";
 import { HOME_SECTIONS } from "@/lib/section-meta";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
+
 import {
   Dimensions,
+  Linking,
   View as RNView,
   ScrollView,
   TextInput,
@@ -36,157 +40,181 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const AMBER = "#FF6B00";
 const BANNER_HEIGHT = 200;
 
-//  Banner slidess
+//  Banner slides
 const bannerSlides = [
   {
     id: "1",
-    topLabel: "Power Your",
-    title: "PROJECTS",
-    subtitle: "Top quality electronics\nfor makers & engineers",
+    section: "search",
+    icon: "bulb-outline",
+    topLabelKey: "banner.slide1.topLabel",
+    titleKey: "banner.slide1.title",
+    subtitleKey: "banner.slide1.subtitle",
     backgroundColor: "#0e2a5a",
     accentColor: AMBER,
   },
   {
     id: "2",
-    topLabel: "Explore",
-    title: "ARDUINO",
-    subtitle: "Boards, modules & sensors\nfor every project",
-    backgroundColor: "#0a3d2e",
-    accentColor: "#2ecc71",
-  },
-  {
-    id: "3",
-    topLabel: "Power Up",
-    title: "SOLAR",
-    subtitle: "Panels, inverters &\nenergy solutions",
+    section: "arduino",
+    icon: "hardware-chip-outline",
+    topLabelKey: "banner.slide2.topLabel",
+    titleKey: "banner.slide2.title",
+    subtitleKey: "banner.slide2.subtitle",
     backgroundColor: "#3a1a00",
     accentColor: AMBER,
   },
   {
+    id: "3",
+    section: "solardb",
+    icon: "sunny-outline",
+    topLabelKey: "banner.slide3.topLabel",
+    titleKey: "banner.slide3.title",
+    subtitleKey: "banner.slide3.subtitle",
+    backgroundColor: "#0e2a5a",
+    accentColor: AMBER,
+  },
+  {
     id: "4",
-    topLabel: "Sound Your",
-    title: "WORLD",
-    subtitle: "Speakers, mixers &\naudio systems",
-    backgroundColor: "#1a003a",
-    accentColor: "#a855f7",
+    section: "sound",
+    icon: "musical-notes-outline",
+    topLabelKey: "banner.slide4.topLabel",
+    titleKey: "banner.slide4.title",
+    subtitleKey: "banner.slide4.subtitle",
+    backgroundColor: "#3a1a00",
+    accentColor: AMBER,
   },
 ];
 
-//categories
+// ⭐ CATEGORIES using categoryIcons
 const categories = [
   {
     id: "1",
-    name: "Solar",
+    nameKey: "categories.solar",
     section: "solardb",
-    icon: require("@/assets/solar.png"),
+    icon: categoryIcons.solardb,
   },
   {
     id: "2",
-    name: "Arduino",
+    nameKey: "categories.arduino",
     section: "arduino",
-    icon: require("@/assets/arduino.png"),
+    icon: categoryIcons.arduino,
   },
   {
     id: "3",
-    name: "Sound",
+    nameKey: "categories.sound",
     section: "sound",
-    icon: require("@/assets/sound.png"),
+    icon: categoryIcons.sound,
   },
   {
     id: "4",
-    name: "Batteries",
+    nameKey: "categories.batteries",
     section: "batteries",
-    icon: require("@/assets/batteries.png"),
+    icon: categoryIcons.batteries,
   },
   {
     id: "5",
-    name: "Chargers",
+    nameKey: "categories.chargers",
     section: "chargers",
-    icon: require("@/assets/chargers.png"),
+    icon: categoryIcons.chargers,
   },
   {
     id: "6",
-    name: "Adapters",
+    nameKey: "categories.adapters",
     section: "adapters",
-    icon: require("@/assets/adapters.png"),
+    icon: categoryIcons.adapters,
   },
   {
     id: "7",
-    name: "Lamps",
+    nameKey: "categories.lamps",
     section: "lamps",
-    icon: require("@/assets/lamp.png"),
+    icon: categoryIcons.lamps,
   },
   {
     id: "8",
-    name: "Mexxsun",
+    nameKey: "categories.mexxsun",
     section: "mexxsun",
-    icon: require("@/assets/mexxsun.png"),
+    icon: categoryIcons.mexxsun,
   },
   {
     id: "9",
-    name: "Filaments",
+    nameKey: "categories.filaments",
     section: "filaments",
-    icon: require("@/assets/filaments.png"),
+    icon: categoryIcons.filaments,
   },
   {
     id: "10",
-    name: "TV Remotes",
+    nameKey: "categories.tv_remotes",
     section: "tv_remotes",
-    icon: require("@/assets/tv_remotes.png"),
+    icon: categoryIcons.tv_remotes,
   },
   {
     id: "11",
-    name: "Fans",
+    nameKey: "categories.fans",
     section: "fans",
-    icon: require("@/assets/fans.png"),
+    icon: categoryIcons.fans,
   },
   {
     id: "12",
-    name: "Electric",
+    nameKey: "categories.electric",
     section: "electric",
-    icon: require("@/assets/electric.png"),
+    icon: categoryIcons.electric,
   },
   {
     id: "13",
-    name: "Screwdrivers",
+    nameKey: "categories.screwdrivers",
     section: "scrawesdriver",
-    icon: require("@/assets/screwdrivers.png"),
+    icon: categoryIcons.scrawesdriver,
   },
   {
     id: "14",
-    name: "Spray Gum",
+    nameKey: "categories.spray_gum",
     section: "spray_gum",
-    icon: require("@/assets/spray_gum.png"),
+    icon: categoryIcons.spray_gum,
   },
 ];
 
-// ─── CATEGORY TILE — a custom illustration standing in for the category
+// ─── CATEGORY TILE
 function CategoryTile({
   icon,
-  name,
+  nameKey,
   onPress,
 }: {
   icon: number;
-  name: string;
+  nameKey: string;
   onPress: () => void;
 }) {
+  const isDark = useColorScheme() === 'dark';
+  const TEXT = isDark ? '#ffffff' : '#111111';
+
   return (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.85}
-      accessibilityLabel={name}
+      accessibilityLabel={t(nameKey)}
       accessibilityRole="button"
+      style={{ alignItems: 'center', width: 72 }}
     >
       <CachedImage
         source={icon}
         style={{ width: 72, height: 72 }}
         contentFit="contain"
       />
+      <Text
+        style={{
+          fontSize: 10,
+          fontWeight: '600',
+          color: TEXT,
+          textAlign: 'center',
+          marginTop: 4,
+        }}
+        numberOfLines={1}
+      >
+        {t(nameKey)}
+      </Text>
     </TouchableOpacity>
   );
 }
 
-// brandes
+// brands
 const brands = [
   { id: "1", name: "ARDUINO", color: "#00979d" },
   { id: "2", name: "ESPRESSIF", color: "#e3342f" },
@@ -379,8 +407,8 @@ export default function HomeScreen() {
   const isDark = scheme === "dark";
   const offlineBannerVisible = useOfflineBannerVisible();
 
-  const PAGE_BG = isDark ? "#0d0d0d" : "#f2f2f7";
-  const HEADER_BG = isDark ? "#0d0d0d" : "#ffffff";
+  const PAGE_BG = isDark ? "#0d0d0d" : "#ffffff";
+  const HEADER_BG = isDark ? "#0d0d0d" : "#fffefe";
   const CARD_BG = isDark ? "#131825" : "#ffffff";
   const TEXT = isDark ? "#ffffff" : "#111111";
   const SUBTEXT = isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.4)";
@@ -388,7 +416,6 @@ export default function HomeScreen() {
   const SEARCH_BG = isDark ? "#0B1525" : "#f0f0f5";
   const ICON_COLOR = isDark ? "#ffffff" : "#111111";
   const SEARCH_PH = isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
-  // const SEARCH_TC = isDark ? "#ffffff" : "#111111";
 
   const bannerProgress = useSharedValue(0);
   const bannerRef = useRef<ICarouselInstance>(null);
@@ -408,13 +435,17 @@ export default function HomeScreen() {
         height: BANNER_HEIGHT,
         borderRadius: 12,
         backgroundColor: item.backgroundColor,
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 20,
-        overflow: "hidden",
+        padding: 24,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        overflow: 'hidden',
+        borderWidth: 4,
+        borderColor: isDark ? AMBER : "#0d0d0d",
       }}
     >
-      <RNView style={{ flex: 1 }}>
+      {/* Text content - left side */}
+      <RNView style={{ flex: 1, paddingRight: 16 }}>
         <Text
           style={{
             fontSize: 11,
@@ -424,7 +455,7 @@ export default function HomeScreen() {
             textTransform: "uppercase",
           }}
         >
-          {item.topLabel}
+          {t(item.topLabelKey)}
         </Text>
         <Text
           style={{
@@ -435,7 +466,7 @@ export default function HomeScreen() {
             marginTop: 2,
           }}
         >
-          {item.title}
+          {t(item.titleKey)}
         </Text>
         <Text
           style={{
@@ -445,8 +476,10 @@ export default function HomeScreen() {
             lineHeight: 16,
           }}
         >
-          {item.subtitle}
+          {t(item.subtitleKey)}
         </Text>
+
+        {/* Shop Now Button */}
         <TouchableOpacity
           style={{
             marginTop: 12,
@@ -456,19 +489,30 @@ export default function HomeScreen() {
             paddingVertical: 7,
             borderRadius: 20,
           }}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            if (item.section === "search") {
+              router.push("/search");
+            } else {
+              router.push({
+                pathname: "/category-detail",
+                params: { section: item.section },
+              });
+            }
+          }}
         >
           <Text style={{ color: "#000", fontSize: 11, fontWeight: "700" }}>
             {t("shopNow")}
           </Text>
         </TouchableOpacity>
       </RNView>
-      <RNView
-        style={{ width: 90, alignItems: "center", justifyContent: "center" }}
-      >
+
+      {/* Icon on the right side */}
+      <RNView style={{ width: 80, alignItems: 'center', justifyContent: 'center' }}>
         <Ionicons
-          name="image-outline"
-          size={40}
-          color="rgba(255,255,255,0.1)"
+          name={item.icon as React.ComponentProps<typeof Ionicons>["name"]}
+          size={56}
+          color={item.accentColor}
         />
       </RNView>
     </RNView>
@@ -519,24 +563,28 @@ export default function HomeScreen() {
           </RNView>
         </RNView>
 
-        {/* Right: Notifications + Cart */}
-        <RNView style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+        {/* ⭐ Right side icons - Language replaced with Currency Switcher */}
+        <RNView style={{ flexDirection: "row", alignItems: "center", gap: 1 }}>
+          {/* Currency Switcher (replaces Language) */}
+          <CurrencySwitcher />
+
+          {/* Notification Icon */}
           <TouchableOpacity
             style={{ padding: 6 }}
             onPress={() => router.push("/notifications")}
           >
-            <Ionicons
-              name="notifications-outline"
-              size={22}
-              color={ICON_COLOR}
-            />
+            <Ionicons name="notifications-outline" size={22} color={ICON_COLOR} />
           </TouchableOpacity>
+
+          {/* Settings Icon */}
           <TouchableOpacity
             style={{ padding: 6 }}
             onPress={() => openSheet("settings")}
           >
             <Ionicons name="settings-outline" size={22} color={ICON_COLOR} />
           </TouchableOpacity>
+
+          {/* Cart Icon */}
           <TouchableOpacity
             onPress={() => router.push("/cart")}
             style={{ padding: 6 }}
@@ -558,9 +606,7 @@ export default function HomeScreen() {
                     paddingHorizontal: 3,
                   }}
                 >
-                  <Text
-                    style={{ fontSize: 9, fontWeight: "800", color: "#fff" }}
-                  >
+                  <Text style={{ fontSize: 9, fontWeight: "800", color: "#fff" }}>
                     {totalItems}
                   </Text>
                 </RNView>
@@ -593,12 +639,7 @@ export default function HomeScreen() {
             paddingVertical: 10,
           }}
         >
-          <Ionicons
-            name="search"
-            size={16}
-            color={SEARCH_PH}
-            style={{ marginRight: 8 }}
-          />
+          <Ionicons name="search" size={16} color={SEARCH_PH} style={{ marginRight: 8 }} />
           <Text style={{ flex: 1, fontSize: 13, color: SEARCH_PH }}>
             {t("home.searchPlaceholder")}
           </Text>
@@ -611,6 +652,48 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 120 }}
       >
+        {/* CATEGORIES */}
+        <RNView
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingHorizontal: 16,
+            marginTop: 16,
+            marginBottom: 12,
+          }}
+        >
+          <Text style={{ fontSize: 18, fontWeight: "700", color: TEXT }}>
+            {t("home.categories")}
+          </Text>
+        </RNView>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}
+          style={{ marginBottom: 24 }}
+        >
+          {categories.map((cat) => {
+            const onPress = () => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push({
+                pathname: "/category-detail",
+                params: { section: cat.section },
+              });
+            };
+
+            return (
+              <CategoryTile
+                key={cat.id}
+                icon={cat.icon}
+                nameKey={cat.nameKey}
+                onPress={onPress}
+              />
+            );
+          })}
+        </ScrollView>
+
         {/* BANNER */}
         <RNView style={{ marginHorizontal: 16, marginBottom: 4 }}>
           <Carousel
@@ -678,46 +761,6 @@ export default function HomeScreen() {
           />
         </RNView>
 
-        {/* CATEGORIES */}
-        <RNView
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            paddingHorizontal: 16,
-            marginTop: 16,
-            marginBottom: 12,
-          }}
-        >
-          <Text style={{ fontSize: 18, fontWeight: "700", color: TEXT }}>
-            {t("home.categories")}
-          </Text>
-        </RNView>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}
-        >
-          {categories.map((cat) => {
-            const onPress = () => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push({
-                pathname: "/category-detail",
-                params: { section: cat.section },
-              });
-            };
-
-            return (
-              <CategoryTile
-                key={cat.id}
-                icon={cat.icon}
-                name={cat.name}
-                onPress={onPress}
-              />
-            );
-          })}
-        </ScrollView>
-
         {/* BRANDS */}
         <RNView
           style={{
@@ -730,7 +773,7 @@ export default function HomeScreen() {
           }}
         >
           <Text style={{ fontSize: 18, fontWeight: "700", color: TEXT }}>
-            {t("home.brands")}
+             {t("home.brands")}
           </Text>
         </RNView>
         <ScrollView
@@ -743,30 +786,29 @@ export default function HomeScreen() {
               key={brand.id}
               style={{
                 paddingHorizontal: 16,
-                height: 42,
-                backgroundColor: CARD_BG,
-                borderRadius: 10,
+                height: 34,
+                backgroundColor: PAGE_BG,
+                borderRadius: 18,
                 borderWidth: 1,
-                borderColor: BORDER,
+                borderColor: isDark ? AMBER : "#0d0d0d",
                 alignItems: "center",
                 justifyContent: "center",
                 flexDirection: "row",
                 gap: 6,
               }}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push({
+                  pathname: "/search",
+                  params: { query: brand.name },
+                });
+              }}
             >
-              <RNView
-                style={{
-                  width: 7,
-                  height: 7,
-                  borderRadius: 4,
-                  backgroundColor: brand.color,
-                }}
-              />
               <Text
                 style={{
-                  fontSize: 11,
+                  fontSize: 14,
                   fontWeight: "700",
-                  color: TEXT,
+                  color: isDark ? AMBER : "#0d0d0d",
                   letterSpacing: 0.8,
                 }}
               >
@@ -790,7 +832,6 @@ export default function HomeScreen() {
         {/* PRODUCT SECTIONS (live API) */}
         <HomeProductSection sectionKey={HOME_SECTIONS[0]} />
 
-        {/* ⚡ REPAIR SERVICE — between first and rest */}
         <RepairServiceCard isDark={isDark} BORDER={BORDER} />
 
         {HOME_SECTIONS.slice(1).map((key) => (
@@ -798,9 +839,7 @@ export default function HomeScreen() {
         ))}
 
         {/* SOCIAL FOOTER */}
-        <RNView
-          style={{ marginHorizontal: 16, marginTop: 8, marginBottom: 16 }}
-        >
+        <RNView style={{ marginHorizontal: 16, marginTop: 8, marginBottom: 16 }}>
           <Text
             style={{
               fontSize: 11,
@@ -818,7 +857,6 @@ export default function HomeScreen() {
             <TouchableOpacity
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                const { Linking } = require("react-native");
                 Linking.openURL("https://www.facebook.com/AlemdarTeknikLtd");
               }}
               activeOpacity={0.8}
@@ -836,7 +874,6 @@ export default function HomeScreen() {
               }}
             >
               <FacebookIcon width={32} height={32} />
-
               <Text style={{ fontSize: 11, fontWeight: "600", color: TEXT }}>
                 Facebook
               </Text>
@@ -846,7 +883,6 @@ export default function HomeScreen() {
             <TouchableOpacity
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                const { Linking } = require("react-native");
                 Linking.openURL(
                   "https://www.instagram.com/alemdarteknik?igsh=MTV3enhzczUxMGFiYg%3D%3D&utm_source=qr",
                 );
@@ -866,7 +902,6 @@ export default function HomeScreen() {
               }}
             >
               <InstagramIcon width={32} height={32} />
-
               <Text style={{ fontSize: 11, fontWeight: "600", color: TEXT }}>
                 Instagram
               </Text>
@@ -876,7 +911,6 @@ export default function HomeScreen() {
             <TouchableOpacity
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                const { Linking } = require("react-native");
                 Linking.openURL(
                   "https://www.google.com/maps?q=Alemdar+Teknik,+Polis+Sk,+Lefko%C5%9Fa+5000&ftid=0x14de17339227c4f7:0x4bb7a378a71dcdc7&entry=gps&shh=CAE&lucs=,94297699,94275415,94231188,94280568,47071704,94218641,94282134,94286869&g_ep=CAISEjI2LjA1LjEuODYxMzIyMjEwMBgAIMi8BypILDk0Mjk3Njk5LDk0Mjc1NDE1LDk0MjMxMTg4LDk0MjgwNTY4LDQ3MDcxNzA0LDk0MjE4NjQxLDk0MjgyMTM0LDk0Mjg2ODY5QgJDWQ%3D%3D&skid=6b7c7b7d-a985-4e3a-92a6-6e0ec7205e39&g_st=ic",
                 );
@@ -895,19 +929,6 @@ export default function HomeScreen() {
                 borderColor: BORDER,
               }}
             >
-              {/* <RNView
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  backgroundColor: "#34A853",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Ionicons name="location" size={18} color="#fff" />
-              </RNView> */}
-
               <GoogleMapIcon width={32} height={32} />
               <Text style={{ fontSize: 11, fontWeight: "600", color: TEXT }}>
                 Location

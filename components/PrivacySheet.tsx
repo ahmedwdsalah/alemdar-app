@@ -1,7 +1,7 @@
-import BottomSheet, { ANIMATIONS, CUSTOM_BACKDROP_POSITIONS, type BottomSheetMethods } from '@devvie/bottom-sheet';
-import { useRef, useEffect } from 'react';
-import { ScrollView, Text, View, StyleSheet, useColorScheme } from 'react-native';
 import { t, useLocale } from '@/lib/i18n';
+import BottomSheet, { ANIMATIONS, CUSTOM_BACKDROP_POSITIONS, type BottomSheetMethods } from '@devvie/bottom-sheet';
+import { useEffect, useRef } from 'react';
+import { ScrollView, StyleSheet, Text, useColorScheme, View } from 'react-native';
 
 type Props = { visible: boolean; onClose: () => void };
 

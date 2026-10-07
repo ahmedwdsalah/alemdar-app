@@ -7,18 +7,18 @@ import { useSearchProducts } from "@/hooks/useSearchProducts";
 import { useSectionProducts } from "@/hooks/useSectionProducts";
 import type { UniversalSearchItem } from "@/lib/api-types";
 import { t as i18nT, useLocale } from "@/lib/i18n";
+import { HOME_SECTIONS } from "@/lib/section-meta";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import { FlashList } from "@shopify/flash-list";
 import {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
   BottomSheetModal,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
+import { FlashList } from "@shopify/flash-list";
 import * as Haptics from "expo-haptics";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useDebounce } from "use-debounce";
 import {
   ActivityIndicator,
   Dimensions,
@@ -39,24 +39,7 @@ import Animated, {
   LinearTransition,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Svg, { Path } from "react-native-svg";
-import {
-  siAdafruit,
-  siAmd,
-  siApple,
-  siArduino,
-  siAsus,
-  siBosch,
-  siBroadcom,
-  siDell,
-  siEspressif,
-  siHp,
-  siHuawei,
-  siIntel,
-  siJbl,
-  siRaspberrypi,
-} from "simple-icons";
-import { HOME_SECTIONS } from "@/lib/section-meta";
+import { useDebounce } from "use-debounce";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const PRODUCTS_PAGE_SIZE = 20;
@@ -84,49 +67,6 @@ const filterCategories = [
   "Components",
 ];
 
-const brands = [
-  "Arduino",
-  "Espressif",
-  "Raspberry Pi",
-  "Adafruit",
-  "Apple",
-  "Dell",
-  "HP",
-  "Huawei",
-  "ASUS",
-  "Intel",
-  "AMD",
-  "Bosch",
-  "Broadcom",
-  "JBL",
-];
-
-const brandLogos: Record<string, { path: string; hex: string }> = {
-  Arduino: siArduino,
-  Espressif: siEspressif,
-  "Raspberry Pi": siRaspberrypi,
-  Adafruit: siAdafruit,
-  Apple: siApple,
-  Dell: siDell,
-  HP: siHp,
-  Huawei: siHuawei,
-  ASUS: siAsus,
-  Intel: siIntel,
-  AMD: siAmd,
-  Bosch: siBosch,
-  Broadcom: siBroadcom,
-  JBL: siJbl,
-};
-
-function BrandLogo({ brand, size }: { brand: string; size: number }) {
-  const icon = brandLogos[brand];
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24">
-      <Path d={icon.path} fill={`#${icon.hex}`} />
-    </Svg>
-  );
-}
-
 const sortOptionKeys = [
   { key: "Popularity", i18nKey: "search.popularity" },
   { key: "Price: Low → High", i18nKey: "search.priceLowHigh" },
@@ -141,6 +81,7 @@ export default function SearchScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const router = useRouter();
+  const params = useLocalSearchParams();
   const offlineBannerVisible = useOfflineBannerVisible();
 
   // ── State
@@ -158,9 +99,21 @@ export default function SearchScreen() {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["88%"], []);
 
+  // ⭐ FIX: Run every time the screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      const newQuery = (params.query as string) || "";
+      if (newQuery) {
+        setTimeout(() => {
+          setQuery(newQuery);
+        }, 150);
+      }
+    }, [params.query]),
+  );
+
   //  Theme tokens
   const t: Record<string, string> = {
-    bg: isDark ? "#0A0A0A" : "#F5F5F5",
+    bg: isDark ? "#0A0A0A" : "#ffffff",
     border: isDark ? "#2A2A2A" : "#E8E8E8",
     text: isDark ? "#FFFFFF" : "#111111",
     subtext: "#888888",
@@ -182,17 +135,10 @@ export default function SearchScreen() {
     );
   };
 
-  const toggleBrand = (brand: string) => {
-    setSelectedBrands((prev) =>
-      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand],
-    );
-  };
-
   // ── Derived (live API search)
   const [debouncedQuery] = useDebounce(query, 250);
   const isSearching = query.trim().length > 0;
-  const isDebouncing =
-    isSearching && query.trim() !== debouncedQuery.trim();
+  const isDebouncing = isSearching && query.trim() !== debouncedQuery.trim();
   const {
     data: searchData,
     isLoading: searchLoading,
@@ -200,7 +146,6 @@ export default function SearchScreen() {
     isError: searchError,
     refetch: refetchSearch,
   } = useSearchProducts(debouncedQuery);
-  const results = (searchData?.data ?? []) as unknown as ApiProduct[];
   const isOnline = useIsOnline();
   // Search never hits the persisted cache (staleTime/gcTime 0), so offline
   // it can never resolve — show the same offline takeover as product-detail
@@ -209,17 +154,18 @@ export default function SearchScreen() {
 
   // ── "Popular products" feed — powers the Temu-style masonry grid when idle
   const {
-  data: popularData,
-  isLoading: popularLoading,
-  isFetchingNextPage: popularFetchingNext,
-  hasNextPage: popularHasNext,
-  fetchNextPage: fetchNextPopular,
-} = useSectionProducts(HOME_SECTIONS[0], { limit: PRODUCTS_PAGE_SIZE });
+    data: popularData,
+    isLoading: popularLoading,
+    isFetchingNextPage: popularFetchingNext,
+    hasNextPage: popularHasNext,
+    fetchNextPage: fetchNextPopular,
+  } = useSectionProducts(HOME_SECTIONS[0], { limit: PRODUCTS_PAGE_SIZE });
 
   const popularProducts = popularData?.pages.flatMap((p) => p.data) ?? [];
 
   // ── Live filtering + sorting, applied on top of the raw search results
   const filteredResults = useMemo(() => {
+    const results = (searchData?.data ?? []) as unknown as ApiProduct[];
     let list = [...results];
 
     if (selectedCategories.length > 0) {
@@ -240,7 +186,7 @@ export default function SearchScreen() {
     }
 
     return list;
-  }, [results, selectedCategories, selectedBrands]);
+  }, [searchData?.data, selectedCategories, selectedBrands]);
 
   // ── Focus → auto-open keyboard
   useFocusEffect(
@@ -311,7 +257,10 @@ export default function SearchScreen() {
   // ─────────────────────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: t.bg }} edges={offlineBannerVisible ? [] : ["top"]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: t.bg }}
+      edges={offlineBannerVisible ? [] : ["top"]}
+    >
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
       {/* ── Search Bar ── */}
@@ -414,40 +363,154 @@ export default function SearchScreen() {
           </TouchableOpacity>
         </View>
       ) : (
-      <FlashList
-        data={isSearching ? filteredResults : popularProducts}
-        keyExtractor={(item: any) =>
-          `${item.tableKey ?? item.section}-${item.id}`
-        }
-        numColumns={isSearching ? 1 : 2}
-        masonry={!isSearching}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        contentContainerStyle={{ paddingBottom: 120 }}
-        refreshing={isSearching && searchRefetching}
-        onRefresh={() => {
-          if (isSearching) {
-            void refetchSearch();
+        <FlashList
+          data={isSearching ? filteredResults : popularProducts}
+          keyExtractor={(item: any) =>
+            `${item.tableKey ?? item.section}-${item.id}`
           }
-        }}
-        onEndReached={handleEndReached}
-        onEndReachedThreshold={0.4}
-        ListHeaderComponent={
-          <Animated.View
-            key={isSearching ? "results-header" : "idle-header"}
-            entering={FadeIn.duration(250)}
-            exiting={FadeOut.duration(200)}
-          >
-            {!isSearching ? (
-              <View>
-                {/* Recent Searches */}
-                <View style={{ paddingHorizontal: 16, marginTop: 20 }}>
+          numColumns={isSearching ? 1 : 2}
+          masonry={!isSearching}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentContainerStyle={{ paddingBottom: 120 }}
+          refreshing={isSearching && searchRefetching}
+          onRefresh={() => {
+            if (isSearching) {
+              void refetchSearch();
+            }
+          }}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.4}
+          ListHeaderComponent={
+            <Animated.View
+              key={isSearching ? "results-header" : "idle-header"}
+              entering={FadeIn.duration(250)}
+              exiting={FadeOut.duration(200)}
+            >
+              {!isSearching ? (
+                <View>
+                  {/* Recent Searches */}
+                  <View style={{ paddingHorizontal: 16, marginTop: 20 }}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        marginBottom: 12,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          fontWeight: "700",
+                          color: t.subtext,
+                          letterSpacing: 0.8,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {i18nT("search.recentSearches")}
+                      </Text>
+                      {recentSearches.length > 0 && (
+                        <TouchableOpacity onPress={() => setRecentSearches([])}>
+                          <Text
+                            style={{
+                              fontSize: 13,
+                              color: t.accent,
+                              fontWeight: "600",
+                            }}
+                          >
+                            {i18nT("search.clearAll")}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                    {recentSearches.length === 0 ? (
+                      <Text style={{ color: t.subtext, fontSize: 13 }}>
+                        {i18nT("search.noRecent")}
+                      </Text>
+                    ) : (
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          flexWrap: "wrap",
+                          gap: 8,
+                        }}
+                      >
+                        {recentSearches.slice(0, 8).map((item) => (
+                          <TouchableOpacity
+                            key={item}
+                            onPress={() => setQuery(item)}
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                              gap: 6,
+                              backgroundColor: t.chipBg,
+                              borderRadius: 20,
+                              paddingHorizontal: 14,
+                              paddingVertical: 8,
+                            }}
+                          >
+                            <Ionicons
+                              name="time-outline"
+                              size={14}
+                              color={t.subtext}
+                            />
+                            <Text style={{ color: t.chipText, fontSize: 13 }}>
+                              {item}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Popular Searches */}
+                  <View style={{ paddingHorizontal: 16, marginTop: 28 }}>
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontWeight: "700",
+                        color: t.subtext,
+                        letterSpacing: 0.8,
+                        textTransform: "uppercase",
+                        marginBottom: 12,
+                      }}
+                    >
+                      {i18nT("search.popularSearches")}
+                    </Text>
+                    <View
+                      style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}
+                    >
+                      {popularSearches.map((item) => (
+                        <TouchableOpacity
+                          key={item}
+                          onPress={() => {
+                            setQuery(item);
+                            saveSearch(item);
+                          }}
+                          style={{
+                            backgroundColor: t.chipBg,
+                            borderRadius: 20,
+                            paddingHorizontal: 14,
+                            paddingVertical: 8,
+                            borderWidth: 1,
+                            borderColor: t.border,
+                          }}
+                        >
+                          <Text style={{ color: t.chipText, fontSize: 13 }}>
+                            {item}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+
+                  {/* Popular Products — Temu-style masonry grid header */}
                   <View
                     style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      marginBottom: 12,
+                      paddingHorizontal: 16,
+                      marginTop: 28,
+                      marginBottom: 4,
                     }}
                   >
                     <Text
@@ -459,294 +522,180 @@ export default function SearchScreen() {
                         textTransform: "uppercase",
                       }}
                     >
-                      {i18nT("search.recentSearches")}
+                      Popular Products
                     </Text>
-                    {recentSearches.length > 0 && (
-                      <TouchableOpacity onPress={() => setRecentSearches([])}>
-                        <Text
-                          style={{
-                            fontSize: 13,
-                            color: t.accent,
-                            fontWeight: "600",
-                          }}
-                        >
-                          {i18nT("search.clearAll")}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
                   </View>
-                  {recentSearches.length === 0 ? (
-                    <Text style={{ color: t.subtext, fontSize: 13 }}>
-                      {i18nT("search.noRecent")}
-                    </Text>
-                  ) : (
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        flexWrap: "wrap",
-                        gap: 8,
-                      }}
-                    >
-                      {recentSearches.slice(0, 8).map((item) => (
-                        <TouchableOpacity
-                          key={item}
-                          onPress={() => setQuery(item)}
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            gap: 6,
-                            backgroundColor: t.chipBg,
-                            borderRadius: 20,
-                            paddingHorizontal: 14,
-                            paddingVertical: 8,
-                          }}
-                        >
-                          <Ionicons
-                            name="time-outline"
-                            size={14}
-                            color={t.subtext}
-                          />
-                          <Text style={{ color: t.chipText, fontSize: 13 }}>
-                            {item}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
+                  {popularLoading && (
+                    <View style={{ paddingVertical: 20 }}>
+                      <ActivityIndicator size="small" color={t.accent} />
                     </View>
                   )}
                 </View>
-
-                {/* Popular Searches */}
-                <View style={{ paddingHorizontal: 16, marginTop: 28 }}>
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      fontWeight: "700",
-                      color: t.subtext,
-                      letterSpacing: 0.8,
-                      textTransform: "uppercase",
-                      marginBottom: 12,
-                    }}
-                  >
-                    {i18nT("search.popularSearches")}
-                  </Text>
-                  <View
-                    style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}
-                  >
-                    {popularSearches.map((item) => (
-                      <TouchableOpacity
-                        key={item}
-                        onPress={() => {
-                          setQuery(item);
-                          saveSearch(item);
-                        }}
-                        style={{
-                          backgroundColor: t.chipBg,
-                          borderRadius: 20,
-                          paddingHorizontal: 14,
-                          paddingVertical: 8,
-                          borderWidth: 1,
-                          borderColor: t.border,
-                        }}
-                      >
-                        <Text style={{ color: t.chipText, fontSize: 13 }}>
-                          {item}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
-                {/* Popular Products — Temu-style masonry grid header */}
+              ) : (
                 <View
                   style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
                     paddingHorizontal: 16,
-                    marginTop: 28,
-                    marginBottom: 4,
+                    paddingTop: 12,
+                    paddingBottom: 8,
                   }}
                 >
                   <Text
-                    style={{
-                      fontSize: 13,
-                      fontWeight: "700",
-                      color: t.subtext,
-                      letterSpacing: 0.8,
-                      textTransform: "uppercase",
-                    }}
+                    style={{ color: t.text, fontSize: 15, fontWeight: "600" }}
                   >
-                    Popular Products
+                    {i18nT("search.resultsTitle")}
+                  </Text>
+                  <Text style={{ color: t.subtext, fontSize: 13 }}>
+                    {searchLoading || isDebouncing
+                      ? "…"
+                      : `${filteredResults.length} ${i18nT("search.results")}`}
                   </Text>
                 </View>
-                {popularLoading && (
-                  <View style={{ paddingVertical: 20 }}>
-                    <ActivityIndicator size="small" color={t.accent} />
-                  </View>
-                )}
-              </View>
-            ) : (
-              <View
+              )}
+            </Animated.View>
+          }
+          renderItem={({ item }: { item: any }) => {
+            if (!isSearching) {
+              return (
+                <View style={{ paddingHorizontal: 6, paddingVertical: 6 }}>
+                  <ProductCard
+                    product={item}
+                    sectionTitle="Popular"
+                    accentColor={t.accent}
+                    fluid
+                  />
+                </View>
+              );
+            }
+
+            const name = item.title;
+            const imageUrl = item.image;
+            const wishlisted = isWishlisted(String(item.id));
+            return (
+              <TouchableOpacity
+                onPress={() => openProduct(item)}
+                activeOpacity={0.7}
                 style={{
                   flexDirection: "row",
-                  justifyContent: "space-between",
                   alignItems: "center",
                   paddingHorizontal: 16,
-                  paddingTop: 12,
-                  paddingBottom: 8,
+                  paddingVertical: 12,
+                  backgroundColor: t.bg,
+                  gap: 14,
                 }}
               >
-                <Text
-                  style={{ color: t.text, fontSize: 15, fontWeight: "600" }}
-                >
-                  {i18nT("search.resultsTitle")}
-                </Text>
-                <Text style={{ color: t.subtext, fontSize: 13 }}>
-                  {searchLoading || isDebouncing
-                    ? "…"
-                    : `${filteredResults.length} ${i18nT("search.results")}`}
-                </Text>
-              </View>
-            )}
-          </Animated.View>
-        }
-        renderItem={({ item }: { item: any }) => {
-          if (!isSearching) {
-            return (
-              <View style={{ paddingHorizontal: 6, paddingVertical: 6 }}>
-                <ProductCard
-                  product={item}
-                  sectionTitle="Popular"
-                  accentColor={t.accent}
-                  fluid
-                />
-              </View>
-            );
-          }
-
-          const name = item.title;
-          const imageUrl = item.image;
-          const wishlisted = isWishlisted(String(item.id));
-          return (
-            <TouchableOpacity
-              onPress={() => openProduct(item)}
-              activeOpacity={0.7}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                backgroundColor: t.bg,
-                gap: 14,
-              }}
-            >
-              <View
-                style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: 12,
-                  backgroundColor: t.imageBg,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  overflow: "hidden",
-                }}
-              >
-                {imageUrl ? (
-                  <CachedImage
-                    source={{ uri: imageUrl }}
-                    style={{ width: "100%", height: "100%" }}
-                    contentFit="cover"
-                    recyclingKey={String(item.id)}
-                  />
-                ) : (
-                  <Ionicons name="cube-outline" size={20} color={t.accent} />
-                )}
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text
-                  numberOfLines={2}
-                  style={{ fontSize: 15, fontWeight: "500", color: t.text }}
-                >
-                  {name}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 13,
-                    fontWeight: "600",
-                    color: t.subtext,
-                    marginTop: 2,
-                  }}
-                >
-                  {item.section}
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => {
-                  Keyboard.dismiss();
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  toggleWishlist({
-                    id: String(item.id),
-                    name,
-                    price: "0",
-                    dec: "00",
-                    stock: "In Stock",
-                    low: false,
-                    sectionId: item.tableKey,
-                    sectionTitle: item.section,
-                    accentColor: "#f5a623",
-                  });
-                }}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Ionicons
-                  name={wishlisted ? "heart" : "heart-outline"}
-                  size={20}
-                  color={wishlisted ? "#e8375a" : t.subtext}
-                />
-              </TouchableOpacity>
-            </TouchableOpacity>
-          );
-        }}
-        ItemSeparatorComponent={
-          isSearching
-            ? () => (
                 <View
                   style={{
-                    height: 1,
-                    backgroundColor: t.border,
-                    marginLeft: 74,
+                    width: 56,
+                    height: 56,
+                    borderRadius: 12,
+                    backgroundColor: t.imageBg,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
                   }}
-                />
-              )
-            : undefined
-        }
-        ListFooterComponent={
-          !isSearching && popularFetchingNext ? (
-            <View style={{ paddingVertical: 20 }}>
-              <ActivityIndicator size="small" color={t.accent} />
-            </View>
-          ) : null
-        }
-        ListEmptyComponent={() =>
-          isSearching && (searchLoading || isDebouncing) ? (
-            <View style={{ alignItems: "center", marginTop: 80, gap: 12 }}>
-              <ActivityIndicator size="large" color={t.accent} />
-              <Text style={{ color: t.subtext, fontSize: 13 }}>
-                Searching...
-              </Text>
-            </View>
-          ) : isSearching ? (
-            <View style={{ alignItems: "center", marginTop: 80, gap: 12 }}>
-              <Text style={{ fontSize: 40 }}>🔍</Text>
-              <Text style={{ color: t.subtext, fontSize: 15 }}>
-                {searchError
-                  ? "Search failed. Try again."
-                  : `${i18nT("search.noResultsFor")} "${debouncedQuery}"`}
-              </Text>
-              <Text style={{ color: t.subtext, fontSize: 13 }}>
-                {i18nT("search.tryDifferent")}
-              </Text>
-            </View>
-          ) : null
-        }
-      />
+                >
+                  {imageUrl ? (
+                    <CachedImage
+                      source={{ uri: imageUrl }}
+                      style={{ width: "100%", height: "100%" }}
+                      contentFit="cover"
+                      recyclingKey={String(item.id)}
+                    />
+                  ) : (
+                    <Ionicons name="cube-outline" size={20} color={t.accent} />
+                  )}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    numberOfLines={2}
+                    style={{ fontSize: 15, fontWeight: "500", color: t.text }}
+                  >
+                    {name}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: "600",
+                      color: t.subtext,
+                      marginTop: 2,
+                    }}
+                  >
+                    {item.section}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    toggleWishlist({
+                      id: String(item.id),
+                      name,
+                      price: "0",
+                      dec: "00",
+                      stock: "In Stock",
+                      low: false,
+                      sectionId: item.tableKey,
+                      sectionTitle: item.section,
+                      accentColor: "#f5a623",
+                    });
+                  }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons
+                    name={wishlisted ? "heart" : "heart-outline"}
+                    size={20}
+                    color={wishlisted ? "#e8375a" : t.subtext}
+                  />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            );
+          }}
+          ItemSeparatorComponent={
+            isSearching
+              ? () => (
+                  <View
+                    style={{
+                      height: 1,
+                      backgroundColor: t.border,
+                      marginLeft: 74,
+                    }}
+                  />
+                )
+              : undefined
+          }
+          ListFooterComponent={
+            !isSearching && popularFetchingNext ? (
+              <View style={{ paddingVertical: 20 }}>
+                <ActivityIndicator size="small" color={t.accent} />
+              </View>
+            ) : null
+          }
+          ListEmptyComponent={() =>
+            isSearching && (searchLoading || isDebouncing) ? (
+              <View style={{ alignItems: "center", marginTop: 80, gap: 12 }}>
+                <ActivityIndicator size="large" color={t.accent} />
+                <Text style={{ color: t.subtext, fontSize: 13 }}>
+                  Searching...
+                </Text>
+              </View>
+            ) : isSearching ? (
+              <View style={{ alignItems: "center", marginTop: 80, gap: 12 }}>
+                <Text style={{ fontSize: 40 }}>🔍</Text>
+                <Text style={{ color: t.subtext, fontSize: 15 }}>
+                  {searchError
+                    ? "Search failed. Try again."
+                    : `${i18nT("search.noResultsFor")} "${debouncedQuery}"`}
+                </Text>
+                <Text style={{ color: t.subtext, fontSize: 13 }}>
+                  {i18nT("search.tryDifferent")}
+                </Text>
+              </View>
+            ) : null
+          }
+        />
       )}
 
       {/* ── Filter Bottom Sheet ── */}

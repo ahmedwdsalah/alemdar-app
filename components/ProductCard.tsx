@@ -1,13 +1,16 @@
+import { CachedImage } from '@/components/CachedImage';
+import { Text } from '@/components/Themed';
+import { useCart } from '@/context/CartContext';
+import { useCurrency } from '@/context/CurrencyContext';
+import { useWishlist } from '@/context/WishlistContext';
+import { resolveImageUrl } from '@/lib/image-url';
+import { splitPrice } from '@/lib/price';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { memo } from 'react';
-import { TouchableOpacity, View as RNView, useColorScheme } from 'react-native';
-import { Text } from '@/components/Themed';
-import { CachedImage } from '@/components/CachedImage';
-import { useCart } from '@/context/CartContext';
-import { splitPrice } from '@/lib/price';
-import { resolveImageUrl } from '@/lib/image-url';
+import { memo, useState } from 'react';
+import { Pressable, View as RNView, Share, TouchableOpacity, useColorScheme } from 'react-native';
+import ProductContextMenu from './ProductContextMenu';
 
 const AMBER = '#FF6B00';
 
@@ -31,7 +34,11 @@ type Props = {
 function ProductCardBase({ product, sectionTitle, accentColor = AMBER, width = 155, fluid = false }: Props) {
   const router = useRouter();
   const { addToCart } = useCart();
+  const { toggleWishlist, isWishlisted } = useWishlist();
+  const { convertPrice } = useCurrency();
   const isDark = useColorScheme() === 'dark';
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [cardPosition, setCardPosition] = useState({ x: 0, y: 0, width: 0, height: 0 });
 
   const CARD_BG = isDark ? '#131825' : '#ffffff';
   const TEXT = isDark ? '#ffffff' : '#111111';
@@ -45,6 +52,9 @@ function ProductCardBase({ product, sectionTitle, accentColor = AMBER, width = 1
   const imageUrl = resolveImageUrl(product.image_filename);
   const categoryLabel = sectionTitle ?? product.category ?? '';
 
+  const isProductWishlisted = isWishlisted(id);
+  const priceNum = parseFloat(`${whole}.${dec}`);
+
   const goToDetail = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push({
@@ -56,8 +66,8 @@ function ProductCardBase({ product, sectionTitle, accentColor = AMBER, width = 1
     });
   };
 
-  const handleAdd = (e: any) => {
-    e?.stopPropagation?.();
+  const handleAdd = (e: any = null) => {
+    if (e) e.stopPropagation?.();
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     addToCart({
       id,
@@ -70,72 +80,146 @@ function ProductCardBase({ product, sectionTitle, accentColor = AMBER, width = 1
     });
   };
 
-  return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      onPress={goToDetail}
-      style={{
-        width: fluid ? '100%' : width,
-        backgroundColor: CARD_BG,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: BORDER,
-        marginRight: fluid ? 0 : 12,
-        overflow: 'hidden',
-      }}
-    >
-      {/* Image — no fixed height, fills naturally */}
-      <RNView style={{ backgroundColor: IMG_BG, minHeight: 120 }}>
-        {imageUrl ? (
-          <CachedImage
-            source={{ uri: imageUrl }}
-            style={{ width: '100%', aspectRatio: 1 }}
-            contentFit="cover"
-            recyclingKey={id}
-          />
-        ) : (
-          <RNView style={{ height: 120, alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons
-              name="image-outline"
-              size={30}
-              color={isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}
-            />
-          </RNView>
-        )}
-      </RNView>
+  const handleWishlist = (e: any = null) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault?.();
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    toggleWishlist({
+      id,
+      name,
+      price: whole,
+      dec,
+      stock: '',
+      low: false,
+      sectionId: product.section,
+      sectionTitle: categoryLabel || product.section,
+      accentColor,
+    });
+  };
 
-      <RNView style={{ padding: 10 }}>
-        {!!categoryLabel && (
-          <Text numberOfLines={1} style={{ fontSize: 9, fontWeight: '700', marginBottom: 4, color: accentColor }}>
-            {categoryLabel}
-          </Text>
-        )}
-        <Text numberOfLines={2} style={{ fontSize: 11, fontWeight: '600', color: TEXT, lineHeight: 15, minHeight: 30, marginBottom: 8 }}>
-          {name}
-        </Text>
-        <RNView style={{ flexDirection: 'row', alignItems: 'flex-end', marginBottom: 8 }}>
-          <Text style={{ fontSize: 17, fontWeight: '800', color: TEXT }}>{whole}</Text>
-          <Text style={{ fontSize: 10, fontWeight: '600', color: TEXT, marginBottom: 1 }}>.{dec}</Text>
-          <Text style={{ fontSize: 10, color: SUBTEXT, marginBottom: 1, marginLeft: 2 }}>TL</Text>
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `Check out ${name} on Alemdar Teknik!`,
+        url: imageUrl || undefined,
+      });
+    } catch (error) {
+      console.log('Error sharing:', error);
+    }
+  };
+
+  const handleLongPress = (event: any) => {
+    const { pageX, pageY } = event.nativeEvent;
+    setCardPosition({
+      x: pageX - 20,
+      y: pageY - 60,
+      width: 0,
+      height: 0,
+    });
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    setMenuVisible(true);
+  };
+
+  return (
+    <>
+      <Pressable
+        onPress={goToDetail}
+        onLongPress={handleLongPress}
+        delayLongPress={400}
+        style={({ pressed }) => ({
+          width: fluid ? '100%' : width,
+          backgroundColor: CARD_BG,
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: BORDER,
+          marginRight: fluid ? 0 : 12,
+          overflow: 'hidden',
+          opacity: pressed ? 0.9 : 1,
+        })}
+      >
+        <RNView style={{ backgroundColor: IMG_BG, minHeight: 120 }}>
+          {imageUrl ? (
+            <CachedImage
+              source={{ uri: imageUrl }}
+              style={{ width: '100%', aspectRatio: 1 }}
+              contentFit="cover"
+              recyclingKey={id}
+            />
+          ) : (
+            <RNView style={{ height: 120, alignItems: 'center', justifyContent: 'center' }}>
+              <Ionicons name="image-outline" size={30} color={isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'} />
+            </RNView>
+          )}
         </RNView>
-        <TouchableOpacity
-          onPress={handleAdd}
-          style={{
-            backgroundColor: '#FF6B00',
-            borderRadius: 8,
-            paddingVertical: 8,
-            alignItems: 'center',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            gap: 4,
-          }}
-        >
-          <Ionicons name="cart-outline" size={11} color="#fff" />
-          <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>Add to Cart</Text>
-        </TouchableOpacity>
-      </RNView>
-    </TouchableOpacity>
+
+        <RNView style={{ padding: 10 }}>
+          {/* ⭐ Category Label REMOVED */}
+          
+          <Text numberOfLines={2} style={{ fontSize: 11, fontWeight: '600', color: TEXT, lineHeight: 15, minHeight: 30, marginBottom: 8 }}>
+            {name}
+          </Text>
+          
+          <RNView style={{ flexDirection: 'row', alignItems: 'flex-end', marginBottom: 8 }}>
+            <Text style={{ fontSize: 17, fontWeight: '800', color: TEXT }}>
+              {convertPrice(priceNum)}
+            </Text>
+          </RNView>
+
+          <RNView style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <TouchableOpacity
+              onPress={handleAdd}
+              activeOpacity={0.7}
+              style={{
+                flex: 1,
+                backgroundColor: isDark ? CARD_BG : "#fff",
+                borderRadius: 8,
+                paddingVertical: 10,
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'row',
+              }}
+            >
+              <Ionicons name="cart-outline" size={24} color={isDark ? AMBER : '#000'} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleWishlist}
+              activeOpacity={0.7}
+              style={{
+                backgroundColor: isDark ? CARD_BG : "#fff",
+                borderRadius: 8,
+                paddingVertical: 10,
+                paddingHorizontal: 12,
+                paddingRight: 16,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: isDark ? CARD_BG : "#fff",
+              }}
+            >
+              <Ionicons
+                name={isProductWishlisted ? 'heart' : 'heart-outline'}
+                size={24}
+                color={isProductWishlisted ? '#e8375a' : AMBER}
+              />
+            </TouchableOpacity>
+          </RNView>
+        </RNView>
+      </Pressable>
+
+      <ProductContextMenu
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        onShare={handleShare}
+        onWishlist={handleWishlist}
+        onAddToCart={handleAdd}
+        productName={name}
+        productImage={imageUrl || undefined}
+        cardPosition={cardPosition}
+      />
+    </>
   );
 }
-
 export const ProductCard = memo(ProductCardBase);

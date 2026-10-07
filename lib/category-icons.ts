@@ -1,0 +1,16 @@
+export const categoryIcons = {
+  solardb: require("@/assets/solar.png"),
+  arduino: require("@/assets/arduino.png"),
+  sound: require("@/assets/sound.png"),
+  batteries: require("@/assets/batteries.png"),
+  chargers: require("@/assets/chargers.png"),
+  adapters: require("@/assets/adapters.png"),
+  lamps: require("@/assets/lamp.png"),
+  mexxsun: require("@/assets/mexxsun.png"),
+  filaments: require("@/assets/filaments.png"),
+  tv_remotes: require("@/assets/tv_remotes.png"),
+  fans: require("@/assets/fans.png"),
+  electric: require("@/assets/electric.png"),
+  scrawesdriver: require("@/assets/screwdrivers.png"),
+  spray_gum: require("@/assets/spray_gum.png"),
+};

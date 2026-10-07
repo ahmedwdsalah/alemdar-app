@@ -1,14 +1,18 @@
+import { CachedImage } from "@/components/CachedImage";
 import { ProductCard } from "@/components/ProductCard";
 import { useOfflineBannerVisible } from "@/hooks/useOfflineBanner";
 import { usePrefetchImages } from "@/hooks/usePrefetchImages";
 import { useSectionProducts } from "@/hooks/useSectionProducts";
+import { categoryIcons } from '@/lib/category-icons';
 import { useLocale } from "@/lib/i18n";
 import { getSectionMeta } from "@/lib/section-meta";
 import { Ionicons } from "@expo/vector-icons";
+import { BlurView } from 'expo-blur';
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
   ActivityIndicator,
   FlatList,
+  Platform,
   StatusBar,
   StyleSheet,
   Text,
@@ -16,7 +20,7 @@ import {
   useColorScheme,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 const PAGE_SIZE = 20;
 
@@ -27,9 +31,11 @@ export default function CategoryDetail() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const offlineBannerVisible = useOfflineBannerVisible();
+  const insets = useSafeAreaInsets(); // ← GET SAFE AREA INSETS
 
   const section = (params.section as string) ?? "main";
   const meta = getSectionMeta(section);
+  const categoryIcon = categoryIcons[section as keyof typeof categoryIcons];
 
   const {
     data,
@@ -46,7 +52,7 @@ export default function CategoryDetail() {
 
   usePrefetchImages(products.map((p) => p.image_filename));
 
-  const bg = isDark ? "#000" : "#f2f2f7";
+  const bg = isDark ? "#000" : '#ffffff';
   const textColor = isDark ? "#fff" : "#000";
   const subText = isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)";
 
@@ -60,26 +66,7 @@ export default function CategoryDetail() {
       >
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <Ionicons name="arrow-back" size={24} color={textColor} />
-          </TouchableOpacity>
-          <View
-            style={[styles.categoryIcon, { backgroundColor: meta.accentColor }]}
-          >
-            <Ionicons name={meta.icon} size={18} color="#fff" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.headerTitle, { color: textColor }]}>
-              {meta.title}
-            </Text>
-          </View>
-        </View>
-
+        {/* ⭐ Content - scrolls behind the header */}
         {isLoading ? (
           <View style={styles.center}>
             <ActivityIndicator color={meta.accentColor} />
@@ -94,6 +81,7 @@ export default function CategoryDetail() {
               flexGrow: isError || products.length === 0 ? 1 : undefined,
               paddingBottom: 40,
               gap: 12,
+              paddingTop: 100, // ← Space for floating header
             }}
             showsVerticalScrollIndicator={false}
             refreshing={isRefetching && !isFetchingNextPage}
@@ -133,6 +121,60 @@ export default function CategoryDetail() {
             }
           />
         )}
+
+        {/* ⭐ FLOATING BLUR HEADER - with safe area padding */}
+        <BlurView
+          intensity={80}
+          tint={isDark ? "dark" : "light"}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 10,
+            paddingTop: insets.top, // ← SAFE AREA PADDING! (fixes the notch issue)
+            overflow: 'hidden',
+            borderBottomWidth: 1,
+            borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+            ...(Platform.OS === 'ios' && {
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+            }),
+            ...(Platform.OS === 'android' && {
+              elevation: 4,
+            }),
+          }}
+        >
+          <View style={styles.header}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Ionicons name="arrow-back" size={24} color={textColor} />
+            </TouchableOpacity>
+
+            {/* Centered Category Icon */}
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              {categoryIcon ? (
+                <CachedImage
+                  source={categoryIcon}
+                  style={{ width: 40, height: 40, borderRadius: 8 }}
+                  contentFit="contain"
+                />
+              ) : (
+                <View
+                  style={[styles.categoryIcon, { backgroundColor: meta.accentColor }]}
+                >
+                  <Ionicons name={meta.icon} size={20} color="#fff" />
+                </View>
+              )}
+            </View>
+
+            <View style={{ width: 40 }} />
+          </View>
+        </BlurView>
       </SafeAreaView>
     </>
   );
@@ -149,8 +191,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 8,
-    marginBottom: 8,
+    paddingVertical: 12,
     paddingHorizontal: 16,
   },
   backButton: { padding: 4, marginRight: 8 },

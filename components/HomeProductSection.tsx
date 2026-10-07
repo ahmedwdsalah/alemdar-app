@@ -28,7 +28,7 @@ export function HomeProductSection({ sectionKey, limit = 10 }: Props) {
   usePrefetchImages(products.map((p) => p.image_filename));
 
   const TEXT = isDark ? "#ffffff" : "#111111";
-  const SUBTEXT = isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.4)";
+  // ⭐ _SUBTEXT REMOVED - it was never used
 
   if (isError || (!isLoading && products.length === 0)) return null;
 
@@ -53,19 +53,10 @@ export function HomeProductSection({ sectionKey, limit = 10 }: Props) {
           <RNView
             style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
           >
-            <RNView
-              style={{
-                width: 4,
-                height: 18,
-                borderRadius: 2,
-                backgroundColor: meta.accentColor,
-              }}
-            />
             <Text style={{ fontSize: 18, fontWeight: "700", color: TEXT }}>
               {meta.title}
             </Text>
           </RNView>
-          {/* <Text style={{ fontSize: 11, color: SUBTEXT, marginTop: 3, marginLeft: 12 }}>{meta.subtitle}</Text> */}
         </RNView>
         <TouchableOpacity
           onPress={viewAll}
@@ -77,11 +68,11 @@ export function HomeProductSection({ sectionKey, limit = 10 }: Props) {
           }}
         >
           <Text
-            style={{ fontSize: 12, fontWeight: "600", color: meta.accentColor }}
+            style={{ fontSize: 12, fontWeight: "600", color: "#FF6B00" }}
           >
             View All
           </Text>
-          <Ionicons name="arrow-forward" size={13} color={meta.accentColor} />
+          <Ionicons name="arrow-forward" size={13} color={"#FF6B00"} />
         </TouchableOpacity>
       </RNView>
 

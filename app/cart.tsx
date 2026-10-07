@@ -1,6 +1,7 @@
 import { CachedImage } from "@/components/CachedImage";
 import { Text } from "@/components/Themed";
 import { useCart } from "@/context/CartContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { useOfflineBannerVisible } from "@/hooks/useOfflineBanner";
 import { usePlaceOrder } from "@/hooks/usePlaceOrder";
 import { formatCartItemsForOrder } from "@/lib/cart-order";
@@ -33,12 +34,13 @@ export default function CartScreen() {
     totalItems,
     totalPrice,
   } = useCart();
+  const { convertPrice } = useCurrency();
   const { mutate: placeOrder, isPending: isPlacingOrder } = usePlaceOrder();
   const scheme = useColorScheme();
   const isDark = scheme === "dark";
   const offlineBannerVisible = useOfflineBannerVisible();
 
-  const PAGE_BG = isDark ? "#0d0d0d" : "#f2f2f7";
+  const PAGE_BG = isDark ? "#0d0d0d" : "#ffffff";
   const CARD_BG = isDark ? "#131825" : "#ffffff";
   const TEXT = isDark ? "#ffffff" : "#111111";
   const SUBTEXT = isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.4)";
@@ -95,7 +97,6 @@ export default function CartScreen() {
         backgroundColor={isDark ? "#0d0d0d" : "#ffffff"}
       />
 
-      {/* HEADER */}
       <RNView
         style={{
           flexDirection: "row",
@@ -134,10 +135,8 @@ export default function CartScreen() {
         )}
       </RNView>
 
-      {/* PAGE BODY — switches to gray background below the header */}
       <RNView style={{ flex: 1, backgroundColor: PAGE_BG }}>
         {items.length === 0 ? (
-          /* EMPTY STATE */
           <RNView
             style={{
               flex: 1,
@@ -196,175 +195,173 @@ export default function CartScreen() {
                 paddingBottom: 160,
               }}
             >
-              {items.map((item) => (
-                <RNView
-                  key={`${item.categoryId}-${item.id}`}
-                  style={{
-                    backgroundColor: CARD_BG,
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor: BORDER,
-                    padding: 14,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 12,
-                  }}
-                >
-                  {/* Image */}
+              {items.map((item) => {
+                const itemPrice = parseFloat(`${item.price}.${item.dec}`);
+                return (
                   <RNView
+                    key={`${item.categoryId}-${item.id}`}
                     style={{
-                      width: 72,
-                      height: 72,
-                      borderRadius: 10,
-                      backgroundColor: isDark ? "#1a2030" : "#f5f5fa",
+                      backgroundColor: CARD_BG,
+                      borderRadius: 14,
+                      borderWidth: 1,
+                      borderColor: BORDER,
+                      padding: 14,
+                      flexDirection: "row",
                       alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                      overflow: "hidden",
+                      gap: 12,
                     }}
                   >
-                    {item.image ? (
-                      <CachedImage
-                        source={{ uri: item.image }}
-                        style={{ width: "100%", height: "100%" }}
-                        contentFit="cover"
-                        recyclingKey={item.id}
-                      />
-                    ) : (
-                      <Ionicons
-                        name="image-outline"
-                        size={28}
-                        color={
-                          isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"
-                        }
-                      />
-                    )}
-                  </RNView>
-
-                  {/* Info */}
-                  <RNView style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        fontSize: 11,
-                        color: AMBER,
-                        fontWeight: "600",
-                        marginBottom: 3,
-                      }}
-                    >
-                      {item.categoryTitle}
-                    </Text>
-                    <Text
-                      numberOfLines={2}
-                      style={{
-                        fontSize: 13,
-                        fontWeight: "600",
-                        color: TEXT,
-                        lineHeight: 18,
-                        marginBottom: 6,
-                      }}
-                    >
-                      {item.name}
-                    </Text>
-                    <Text
-                      style={{ fontSize: 16, fontWeight: "800", color: AMBER }}
-                    >
-                      {item.price}.{item.dec}{" "}
-                      <Text
-                        style={{
-                          fontSize: 11,
-                          color: SUBTEXT,
-                          fontWeight: "400",
-                        }}
-                      >
-                        TL
-                      </Text>
-                    </Text>
-                  </RNView>
-
-                  {/* Qty controls + delete */}
-                  <RNView style={{ alignItems: "center", gap: 8 }}>
-                    <TouchableOpacity
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        removeFromCart(item.id, item.categoryId);
-                      }}
-                      style={{ padding: 4 }}
-                    >
-                      <Ionicons
-                        name="trash-outline"
-                        size={18}
-                        color="#e3342f"
-                      />
-                    </TouchableOpacity>
-
                     <RNView
                       style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 0,
-                        backgroundColor: isDark ? "#0d1120" : "#f0f0f5",
+                        width: 72,
+                        height: 72,
                         borderRadius: 10,
+                        backgroundColor: isDark ? "#1a2030" : "#f5f5fa",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
                         overflow: "hidden",
                       }}
                     >
-                      <TouchableOpacity
-                        onPress={() => {
-                          Haptics.impactAsync(
-                            Haptics.ImpactFeedbackStyle.Light,
-                          );
-                          updateQty(
-                            item.id,
-                            item.categoryId,
-                            item.quantity - 1,
-                          );
-                        }}
-                        style={{
-                          width: 32,
-                          height: 32,
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Ionicons name="remove" size={16} color={TEXT} />
-                      </TouchableOpacity>
+                      {item.image ? (
+                        <CachedImage
+                          source={{ uri: item.image }}
+                          style={{ width: "100%", height: "100%" }}
+                          contentFit="cover"
+                          recyclingKey={item.id}
+                        />
+                      ) : (
+                        <Ionicons
+                          name="image-outline"
+                          size={28}
+                          color={
+                            isDark
+                              ? "rgba(255,255,255,0.08)"
+                              : "rgba(0,0,0,0.08)"
+                          }
+                        />
+                      )}
+                    </RNView>
+
+                    <RNView style={{ flex: 1 }}>
                       <Text
                         style={{
-                          fontSize: 14,
-                          fontWeight: "700",
-                          color: TEXT,
-                          minWidth: 24,
-                          textAlign: "center",
+                          fontSize: 11,
+                          color: AMBER,
+                          fontWeight: "600",
+                          marginBottom: 3,
                         }}
                       >
-                        {item.quantity}
+                        {item.categoryTitle}
                       </Text>
+                      <Text
+                        numberOfLines={2}
+                        style={{
+                          fontSize: 13,
+                          fontWeight: "600",
+                          color: TEXT,
+                          lineHeight: 18,
+                          marginBottom: 6,
+                        }}
+                      >
+                        {item.name}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          fontWeight: "800",
+                          color: AMBER,
+                        }}
+                      >
+                        {convertPrice(itemPrice)}
+                      </Text>
+                    </RNView>
+
+                    <RNView style={{ alignItems: "center", gap: 8 }}>
                       <TouchableOpacity
                         onPress={() => {
                           Haptics.impactAsync(
                             Haptics.ImpactFeedbackStyle.Light,
                           );
-                          updateQty(
-                            item.id,
-                            item.categoryId,
-                            item.quantity + 1,
-                          );
+                          removeFromCart(item.id, item.categoryId);
                         }}
+                        style={{ padding: 4 }}
+                      >
+                        <Ionicons
+                          name="trash-outline"
+                          size={18}
+                          color="#e3342f"
+                        />
+                      </TouchableOpacity>
+
+                      <RNView
                         style={{
-                          width: 32,
-                          height: 32,
+                          flexDirection: "row",
                           alignItems: "center",
-                          justifyContent: "center",
+                          gap: 0,
+                          backgroundColor: isDark ? "#0d1120" : "#f0f0f5",
+                          borderRadius: 10,
+                          overflow: "hidden",
                         }}
                       >
-                        <Ionicons name="add" size={16} color={TEXT} />
-                      </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => {
+                            Haptics.impactAsync(
+                              Haptics.ImpactFeedbackStyle.Light,
+                            );
+                            updateQty(
+                              item.id,
+                              item.categoryId,
+                              item.quantity - 1,
+                            );
+                          }}
+                          style={{
+                            width: 32,
+                            height: 32,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Ionicons name="remove" size={16} color={TEXT} />
+                        </TouchableOpacity>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            fontWeight: "700",
+                            color: TEXT,
+                            minWidth: 24,
+                            textAlign: "center",
+                          }}
+                        >
+                          {item.quantity}
+                        </Text>
+                        <TouchableOpacity
+                          onPress={() => {
+                            Haptics.impactAsync(
+                              Haptics.ImpactFeedbackStyle.Light,
+                            );
+                            updateQty(
+                              item.id,
+                              item.categoryId,
+                              item.quantity + 1,
+                            );
+                          }}
+                          style={{
+                            width: 32,
+                            height: 32,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Ionicons name="add" size={16} color={TEXT} />
+                        </TouchableOpacity>
+                      </RNView>
                     </RNView>
                   </RNView>
-                </RNView>
-              ))}
+                );
+              })}
             </ScrollView>
 
-            {/* CHECKOUT BAR */}
             <RNView
               style={{
                 position: "absolute",
@@ -408,8 +405,7 @@ export default function CartScreen() {
                   </Text>
                 </Text>
                 <Text style={{ fontSize: 22, fontWeight: "900", color: TEXT }}>
-                  {totalPrice.toFixed(2)}{" "}
-                  <Text style={{ fontSize: 14, color: SUBTEXT }}>TL</Text>
+                  {convertPrice(totalPrice)}
                 </Text>
               </RNView>
 

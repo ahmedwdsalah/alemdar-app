@@ -1,4 +1,20 @@
 {
+  "categories": {
+    "solar": "Güneş Enerjisi",
+    "arduino": "Arduino",
+    "sound": "Ses",
+    "batteries": "Piller",
+    "chargers": "Şarj Cihazları",
+    "adapters": "Adaptörler",
+    "lamps": "Lambalar",
+    "mexxsun": "Mexxsun",
+    "filaments": "Filamentler",
+    "tv_remotes": "TV Kumandaları",
+    "fans": "Vantilatörler",
+    "electric": "Elektrik",
+    "screwdrivers": "Tornavidalar",
+    "spray_gum": "Sprey Yapıştırıcı"
+  },
   "myOrders": "Siparişlerim",
   "wishlist": "Favoriler",
   "coupons": "Kuponlar",
@@ -16,15 +32,15 @@
   "deleteConfirm": "Sil",
   "ordersCount": "12 Sipariş",
   "wishlistCount": "8 Ürün",
-  "couponsCount": "3 Kupon",
+  "couponsCount": "3 Mevcut",
   "historyCount": "15 Ürün",
   "notifications": "3",
   "privacyTitle": "Gizlilik Politikası",
-  "privacyText": "Bu Gizlilik Politikası, uygulamamızı kullandığınızda kişisel bilgilerinizi nasıl topladığımızı, kullandığımızı ve paylaştığımızı açıklar. Hizmetlerimizi kullanarak, bu politikaya uygun olarak bilgilerin toplanmasını ve kullanılmasını kabul etmiş olursunuz.\n\nTopladığımız Bilgiler\n\nHizmetimizi sunmak ve geliştirmek için çeşitli amaçlarla farklı türde bilgiler toplarız. Kişisel Veriler bunlarla sınırlı olmamak üzere şunları içerir: e-posta adresi, ad ve soyad, telefon numarası, adres ve kullanım verileri. Kullanım Verileri, hizmeti kullanırken otomatik olarak toplanır ve cihazınızın IP adresi, tarayıcı türü, tarayıcı sürümü, ziyaret ettiğiniz hizmet sayfaları, ziyaretinizin saati ve tarihi, bu sayfalarda geçirilen süre ve diğer tanılama verilerini içerebilir.\n\nİzleme Teknolojileri ve Çerezler\n\nHizmetimizdeki etkinliği izlemek ve belirli bilgileri tutmak için çerezler ve benzer izleme teknolojileri kullanırız. Çerezler, anonim benzersiz tanımlayıcı içerebilen küçük veri dosyalarıdır. Tarayıcınıza tüm çerezleri reddetmesi veya bir çerez gönderildiğinde belirtmesi talimatını verebilirsiniz. Ancak, çerezleri kabul etmezseniz, hizmetimizin bazı bölümlerini kullanamayabilirsiniz.\n\nKişisel Verilerinizin Kullanımı\n\nKişisel verileri şu amaçlarla kullanabiliriz: hizmetimizi sunmak ve sürdürmek, hizmetimizdeki değişiklikler hakkında sizi bilgilendirmek, seçtiğinizde hizmetimizin etkileşimli özelliklerine katılmanıza izin vermek, müşteri desteği sağlamak, hizmetimizi geliştirebilmemiz için analiz veya değerli bilgiler toplamak, hizmetimizin kullanımını izlemek, teknik sorunları tespit etmek, önlemek ve ele almak ve size haberler, özel teklifler ve sunduğumuz diğer mal, hizmet ve etkinlikler hakkında genel bilgiler sağlamak.\n\nVeri Saklama\n\nKişisel verilerinizi yalnızca bu gizlilik politikasında belirtilen amaçlar için gerekli olduğu sürece saklayacağız. Yasal yükümlülüklerimize uymak, anlaşmazlıkları çözmek ve yasal anlaşmalarımızı ve politikalarımızı uygulamak için gerekli olduğu ölçüde kişisel verilerinizi saklayacak ve kullanacağız.\n\nVeri Aktarımı\n\nKişisel verileriniz de dahil olmak üzere bilgileriniz, veri koruma yasalarının sizinkinden farklı olabileceği eyalet, il, ülke veya diğer hükümet yetki alanınızın dışında bulunan bilgisayarlara aktarılabilir ve bu bilgisayarlarda saklanabilir. Bu gizlilik politikasına onay vermeniz ve ardından bu tür bilgileri göndermeniz, bu aktarıma ilişkin onayınızı temsil eder.\n\nKişisel Verilerinizin Güvenliği\n\nKişisel verilerinizin güvenliği bizim için önemlidir, ancak internet üzerinden hiçbir iletim yönteminin veya elektronik depolama yönteminin %100 güvenli olmadığını unutmayın. Kişisel verilerinizi korumak için ticari olarak kabul edilebilir yöntemler kullanmaya çalışsak da, mutlak güvenliğini garanti edemeyiz.\n\nBu Gizlilik Politikasındaki Değişiklikler\n\nGizlilik politikamızı zaman zaman güncelleyebiliriz. Herhangi bir değişiklik olduğunda, yeni gizlilik politikasını bu sayfada yayınlayarak sizi bilgilendireceğiz. Herhangi bir değişiklik için bu gizlilik politikasını periyodik olarak gözden geçirmeniz önerilir. Bu gizlilik politikasındaki değişiklikler, bu sayfada yayınlandıklarında geçerlidir.\n\nBize Ulaşın\n\nBu gizlilik politikası hakkında herhangi bir sorunuz varsa, lütfen support@alemdar.com adresinden e-posta yoluyla bizimle iletişime geçin.",
+  "privacyText": "Bu Gizlilik Politikası, uygulamamızı kullandığınızda kişisel bilgilerinizi nasıl topladığımızı, kullandığımızı ve paylaştığımızı açıklar. Hizmetlerimizi kullanarak, bu politika doğrultusunda bilgi toplanmasına ve kullanılmasına izin vermiş olursunuz.\n\nTopladığımız Bilgiler\n\nHizmetimizi sağlamak ve iyileştirmek için çeşitli amaçlarla farklı türde bilgiler topluyoruz. Kişisel Veriler şunları içerir ancak bunlarla sınırlı değildir: e-posta adresi, ad ve soyad, telefon numarası, adres ve kullanım verileri. Kullanım Verileri, hizmeti kullanırken otomatik olarak toplanır ve cihaz IP adresiniz, tarayıcı türü, tarayıcı sürümü, ziyaret ettiğiniz sayfalar, ziyaret saatiniz ve tarihiniz, bu sayfalarda geçirdiğiniz süre ve diğer tanılama verileri gibi bilgileri içerebilir.\n\nİzleme Teknolojileri ve Çerezler\n\nHizmetimizdeki etkinliği izlemek ve belirli bilgileri saklamak için çerezler ve benzeri izleme teknolojilerini kullanıyoruz. Çerezler, anonim benzersiz bir tanımlayıcı içerebilen küçük veri dosyalarıdır. Tarayıcınızı tüm çerezleri reddedecek veya bir çerez gönderildiğinde size bildirecek şekilde yapılandırabilirsiniz. Ancak, çerezleri kabul etmezseniz, hizmetimizin bazı bölümlerini kullanamayabilirsiniz.\n\nKişisel Verilerinizin Kullanımı\n\nKişisel verilerinizi şu amaçlarla kullanabiliriz: hizmetimizi sağlamak ve sürdürmek, hizmetimizdeki değişiklikler hakkında sizi bilgilendirmek, istediğinizde hizmetimizin etkileşimli özelliklerine katılmanıza izin vermek, müşteri desteği sağlamak, hizmetimizi iyileştirebilmemiz için analiz veya değerli bilgiler toplamak, hizmetimizin kullanımını izlemek, teknik sorunları tespit etmek, önlemek ve çözmek ve size sunduğumuz diğer ürünler, hizmetler ve etkinlikler hakkında haberler, özel teklifler ve genel bilgiler sağlamak.\n\nVeri Saklama\n\nKişisel verilerinizi, bu gizlilik politikasında belirtilen amaçlar için gerekli olduğu sürece saklayacağız. Yasal yükümlülüklerimizi yerine getirmek, anlaşmazlıkları çözmek ve yasal anlaşmalarımızı ve politikalarımızı uygulamak için gerekli olduğu ölçüde kişisel verilerinizi saklayacak ve kullanacağız.\n\nVeri Transferi\n\nBilgileriniz, kişisel veriler dahil olmak üzere, eyaletinizin, ilinizin, ülkenizin veya diğer hükümet yetki alanınızın dışında bulunan ve veri koruma yasalarının sizin yetki alanınızdakilerden farklı olabileceği bilgisayarlara aktarılabilir ve burada saklanabilir. Bu gizlilik politikasını kabul etmeniz ve ardından bu tür bilgileri göndermeniz, bu aktarımı kabul ettiğiniz anlamına gelir.\n\nKişisel Verilerinizin Güvenliği\n\nKişisel verilerinizin güvenliği bizim için önemlidir, ancak internet üzerinden veri iletiminin veya elektronik depolamanın hiçbir yönteminin %100 güvenli olmadığını unutmayın. Kişisel verilerinizi korumak için ticari olarak kabul edilebilir araçlar kullanmaya çalışsak da, mutlak güvenliğini garanti edemeyiz.\n\nBu Gizlilik Politikasında Değişiklikler\n\nGizlilik politikamızı zaman zaman güncelleyebiliriz. Herhangi bir değişikliği bu sayfaya yeni gizlilik politikasını koyarak size bildireceğiz. Herhangi bir değişiklik için bu gizlilik politikasını periyodik olarak gözden geçirmeniz önerilir. Bu gizlilik politikasındaki değişiklikler, bu sayfada yayınlandıkları tarihte yürürlüğe girer.\n\nBize Ulaşın\n\nBu gizlilik politikası hakkında herhangi bir sorunuz varsa, lütfen support@alemdar.com adresinden bizimle iletişime geçin.",
   "languageTitle": "Dil",
-  "english": "English",
+  "english": "İngilizce",
   "turkish": "Türkçe",
-  "profileName": "Lamine Diamoutene",
+  "profileName": "Salah",
   "help": {
     "callCenter": "Çağrı Merkezi",
     "whatsapp": "WhatsApp",
@@ -35,8 +51,8 @@
     "title": "SSS",
     "subtitle": "Sıkça sorulan sorular",
     "getStarted": {
-      "question": "Nasıl başlayabilirim?",
-      "answer": "Uygulamayı indirin, hesap oluşturun ve yakınınızdaki işletmeleri keşfetmeye başlayın."
+      "question": "Nasıl başlarım?",
+      "answer": "Uygulamayı indirin, bir hesap oluşturun ve yakınınızdaki işletmeleri keşfetmeye başlayın."
     },
     "dataSecure": {
       "question": "Verilerim güvende mi?",
@@ -48,45 +64,45 @@
     }
   },
   "address": {
-    "title": "Adres Yönetimi",
+    "title": "Adresiniz",
     "name": "Ad Soyad",
-    "line": "Adres Satırı",
-    "flat": "Daire / Apartman",
+    "line": "Sokak adresi",
+    "flat": "Daire / Kat",
     "city": "Şehir",
     "postalCode": "Posta kodu",
-    "phone": "Telefon",
+    "phone": "Telefon numarası",
     "required": "Bu alan zorunludur",
     "save": "Adresi Kaydet"
   },
   "offline": {
     "banner": "Çevrimdışısınız",
     "backOnline": "Tekrar çevrimiçisiniz",
-    "productUnavailable": "Bu ürün henüz çevrimdışı kullanılamıyor. İnternete bağlanıp tekrar deneyin.",
-    "searchUnavailable": "Arama çevrimdışıyken kullanılamıyor. İnternete bağlanıp tekrar deneyin."
+    "productUnavailable": "Bu ürün çevrimdışı olarak kullanılamıyor. İnternete bağlanıp tekrar deneyin.",
+    "searchUnavailable": "Arama çevrimdışı olarak kullanılamıyor. İnternete bağlanıp tekrar deneyin."
   },
   "addToCart": "Sepete Ekle",
-  "shopNow": "Alışverişe Başla →",
+  "shopNow": "Hemen Al →",
   "viewAll": "Tümünü Gör",
   "home": {
-    "searchPlaceholder": "Arduino, güneş, kablo ara...",
+    "searchPlaceholder": "Arduino, güneş, kablolar... ara",
     "categories": "Kategoriler",
-    "brands": "Öne Çıkan Markalar",
-    "followUs": "Bizi takip et & bul",
+    "brands": "Markaya Göre Ara",
+    "followUs": "Bizi takip edin & bulun",
     "copyright": "© 2026 Alemdar Teknik · Lefkoşa, KKTC",
     "location": "Lefkoşa, KKTC",
     "repair": {
       "title": "Elektrikle mi çalışıyor?",
       "subtitle": "Biz tamir ederiz.",
-      "callBack": "Call me back · Beni Ara",
-      "leaveNumber": "Numaranı bırak — seni arayalım",
-      "step1": "Sen ara",
-      "step2": "Biz teslim alırız",
-      "step3": "Biz tamir ederiz",
-      "step4": "Kapına geri döner"
+      "callBack": "Beni ara · Call me back",
+      "leaveNumber": "Numaranızı bırakın — sizi arayalım",
+      "step1": "Siz arayın",
+      "step2": "Biz alalım",
+      "step3": "Tamir edelim",
+      "step4": "Kapınıza geri getirelim"
     }
   },
   "search": {
-    "placeholder": "Ürün, kategori ara...",
+    "placeholder": "Ürünler, kategoriler... ara",
     "cancel": "İptal",
     "results": "sonuç",
     "resultsTitle": "Arama Sonuçları",
@@ -94,7 +110,7 @@
     "clearAll": "Tümünü temizle",
     "noRecent": "Son arama yok",
     "popularSearches": "Popüler Aramalar",
-    "noResultsFor": "Sonuç bulunamadı:",
+    "noResultsFor": "için sonuç bulunamadı",
     "tryDifferent": "Farklı bir anahtar kelime deneyin",
     "filters": "Filtreler",
     "categories": "Kategoriler",
@@ -104,12 +120,12 @@
     "priceRange": "Fiyat Aralığı",
     "availability": "Stok Durumu",
     "all": "Tümü",
-    "inStock": "Stokta Var",
-    "outOfStock": "Tükendi",
-    "sortBy": "Sırala",
+    "inStock": "Stokta",
+    "outOfStock": "Stokta Yok",
+    "sortBy": "Sıralama",
     "popularity": "Popülerlik",
-    "priceLowHigh": "Fiyat: Düşükten Yükseğe",
-    "priceHighLow": "Fiyat: Yüksekten Düşüğe",
+    "priceLowHigh": "Fiyat: Düşük → Yüksek",
+    "priceHighLow": "Fiyat: Yüksek → Düşük",
     "newArrivals": "Yeni Gelenler",
     "reset": "Sıfırla",
     "applyFilters": "Filtreleri Uygula"
@@ -118,28 +134,28 @@
     "title": "Sepetim",
     "clear": "Temizle",
     "empty": "Sepetiniz boş",
-    "emptyDesc": "Başlamak için ana ekrandan ürün ekleyin.",
+    "emptyDesc": "Başlamak için ana sayfadan ürün ekleyin.",
     "startShopping": "Alışverişe Başla",
     "subtotal": "Ara Toplam",
     "delivery": "Teslimat:",
     "freeDelivery": "Lefkoşa'da Ücretsiz",
     "placeOrder": "Sipariş Ver",
     "placingOrder": "Sipariş veriliyor...",
-    "orderSuccess": "Siparişiniz başarıyla alındı.",
-    "orderFailed": "Sipariş verilemedi. Lütfen tekrar deneyin.",
+    "orderSuccess": "Siparişiniz başarıyla oluşturuldu.",
+    "orderFailed": "Siparişiniz oluşturulamadı. Lütfen tekrar deneyin.",
     "missingAddress": "Sipariş vermeden önce teslimat adresinizi ve telefon numaranızı ekleyin.",
     "addAddress": "Adres Ekle",
     "item": "ürün",
     "items": "ürün"
   },
   "wishlistPage": {
-    "title": "İstek Listem",
-    "empty": "İstek listeniz boş",
-    "emptyDesc": "Kaydetmek için herhangi bir ürünün kalbine dokunun.",
+    "title": "Favorilerim",
+    "empty": "Favorileriniz boş",
+    "emptyDesc": "Bir ürünü favorilere eklemek için kalbe dokunun.",
     "browseItems": "Ürünlere Göz At",
     "item": "ürün",
     "items": "ürün",
-    "removeTitle": "İstek Listesinden Kaldır",
+    "removeTitle": "Favorilerden Kaldır",
     "remove": "Kaldır"
   },
   "product": {
@@ -148,9 +164,31 @@
     "category": "Kategori",
     "availability": "Stok Durumu",
     "sku": "Stok Kodu",
-    "shipping": "Kargo",
+    "shipping": "Teslimat",
     "shippingValue": "Lefkoşa'da Aynı Gün",
-    "moreFrom": "%{title} kategorisinden daha fazlası",
+    "moreFrom": "%{title} kategorisinden daha fazla",
     "addedToCart": "Sepete eklendi!"
+  },
+"banner": {
+  "slide1": {
+    "topLabel": "Gücünü Keşfet",
+    "title": "PROJELER",
+    "subtitle": "Mühendisler ve üreticiler için\nkaliteli elektronik"
+  },
+  "slide2": {
+    "topLabel": "Keşfet",
+    "title": "ARDUINO",
+    "subtitle": "Her proje için kartlar,\nmodüller ve sensörler"
+  },
+  "slide3": {
+    "topLabel": "Güçlendir",
+    "title": "GÜNEŞ",
+    "subtitle": "Paneller, invertörler ve\nenerji çözümleri"
+  },
+  "slide4": {
+    "topLabel": "Sesini Yükselt",
+    "title": "DÜNYA",
+    "subtitle": "Hoparlörler, mikserler ve\nses sistemleri"
   }
+}
 }
