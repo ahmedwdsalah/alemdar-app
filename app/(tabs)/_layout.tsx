@@ -107,6 +107,15 @@ export default function TabLayout() {
             }}
           />
           <Tabs.Screen
+            name="feed"
+            options={{
+             title: "Feed",
+             tabBarIcon: ({ color }) => (
+      <Ionicons name="play-circle-outline" size={26} color={color} />
+    ),
+  }}
+/>
+          <Tabs.Screen
             name="search"
             options={{
               title: "Search",
@@ -134,6 +143,15 @@ export default function TabLayout() {
               ),
             }}
           />
+             <Tabs.Screen
+          name="models"
+          options={{
+           title: "3D Models",
+          tabBarIcon: ({ color }) => (
+          <Ionicons name="cube-outline" size={26} color={color} />
+    ),
+  }}
+/>
           <Tabs.Screen
             name="center"
             options={{

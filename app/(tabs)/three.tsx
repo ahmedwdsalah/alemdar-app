@@ -30,6 +30,7 @@ type WishlistCardProps = {
 
 function WishlistCard({ item, onRemove, isDark, CARD_BG, TEXT, SUBTEXT, BORDER }: WishlistCardProps) {
   const router = useRouter();
+  // ADDED: Currency conversion hook
   const { convertPrice } = useCurrency();
   const priceNum = parseFloat(`${item.price}.${item.dec}`);
 
@@ -66,6 +67,7 @@ function WishlistCard({ item, onRemove, isDark, CARD_BG, TEXT, SUBTEXT, BORDER }
           {item.name}
         </Text>
         <RNView style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
+          {/*  UPDATED: Converted price */}
           <Text style={{ fontSize: 16, fontWeight: '800', color: AMBER }}>
             {convertPrice(priceNum)}
           </Text>

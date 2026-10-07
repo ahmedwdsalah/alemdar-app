@@ -9,7 +9,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { memo, useState } from 'react';
-import { Pressable, View as RNView, Share, TouchableOpacity, useColorScheme } from 'react-native';
+import { Pressable, View as RNView, TouchableOpacity, useColorScheme } from 'react-native';
+import CustomShareMenu from './CustomShareMenu';
 import ProductContextMenu from './ProductContextMenu';
 
 const AMBER = '#FF6B00';
@@ -38,6 +39,7 @@ function ProductCardBase({ product, sectionTitle, accentColor = AMBER, width = 1
   const { convertPrice } = useCurrency();
   const isDark = useColorScheme() === 'dark';
   const [menuVisible, setMenuVisible] = useState(false);
+  const [shareMenuVisible, setShareMenuVisible] = useState(false);
   const [cardPosition, setCardPosition] = useState({ x: 0, y: 0, width: 0, height: 0 });
 
   const CARD_BG = isDark ? '#131825' : '#ffffff';
@@ -53,7 +55,8 @@ function ProductCardBase({ product, sectionTitle, accentColor = AMBER, width = 1
   const categoryLabel = sectionTitle ?? product.category ?? '';
 
   const isProductWishlisted = isWishlisted(id);
-  const priceNum = parseFloat(`${whole}.${dec}`);
+  // ⭐ Price is in USD from the database
+  const priceInUSD = parseFloat(`${whole}.${dec}`);
 
   const goToDetail = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -99,15 +102,8 @@ function ProductCardBase({ product, sectionTitle, accentColor = AMBER, width = 1
     });
   };
 
-  const handleShare = async () => {
-    try {
-      await Share.share({
-        message: `Check out ${name} on Alemdar Teknik!`,
-        url: imageUrl || undefined,
-      });
-    } catch (error) {
-      console.log('Error sharing:', error);
-    }
+  const openShareMenu = () => {
+    setShareMenuVisible(true);
   };
 
   const handleLongPress = (event: any) => {
@@ -155,15 +151,14 @@ function ProductCardBase({ product, sectionTitle, accentColor = AMBER, width = 1
         </RNView>
 
         <RNView style={{ padding: 10 }}>
-          {/* ⭐ Category Label REMOVED */}
-          
           <Text numberOfLines={2} style={{ fontSize: 11, fontWeight: '600', color: TEXT, lineHeight: 15, minHeight: 30, marginBottom: 8 }}>
             {name}
           </Text>
-          
+
+          {/* ⭐ Price in USD from database, converted to selected currency */}
           <RNView style={{ flexDirection: 'row', alignItems: 'flex-end', marginBottom: 8 }}>
             <Text style={{ fontSize: 17, fontWeight: '800', color: TEXT }}>
-              {convertPrice(priceNum)}
+              {convertPrice(priceInUSD)}
             </Text>
           </RNView>
 
@@ -212,14 +207,23 @@ function ProductCardBase({ product, sectionTitle, accentColor = AMBER, width = 1
       <ProductContextMenu
         visible={menuVisible}
         onClose={() => setMenuVisible(false)}
-        onShare={handleShare}
+        onShare={openShareMenu}
         onWishlist={handleWishlist}
         onAddToCart={handleAdd}
         productName={name}
         productImage={imageUrl || undefined}
         cardPosition={cardPosition}
       />
+
+      <CustomShareMenu
+        visible={shareMenuVisible}
+        onClose={() => setShareMenuVisible(false)}
+        title={name}
+        message={`Check out ${name} on Alemdar Teknik!`}
+        url={imageUrl || 'https://alemdarteknik.com'}
+      />
     </>
   );
 }
+
 export const ProductCard = memo(ProductCardBase);

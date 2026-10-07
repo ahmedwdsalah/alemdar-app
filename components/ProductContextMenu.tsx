@@ -1,19 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef } from 'react';
 import {
-    Animated,
-    Dimensions,
-    Image,
-    Modal,
-    Pressable,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    useColorScheme
+  Animated,
+  Dimensions,
+  Image,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -43,15 +42,13 @@ export default function ProductContextMenu({
 
   const menuOptions = [
     {
-      icon: 'heart-circle-outline',
-      label: 'Add to Wishlist',
+      icon: 'heart-outline',
+      label: 'Wishlist',
       onPress: () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         onWishlist();
         onClose();
       },
-      gradientColors: ['#FF6B6B', '#EE5A24'],
-      glowColor: '#FF6B6B',
     },
     {
       icon: 'cart-outline',
@@ -61,19 +58,15 @@ export default function ProductContextMenu({
         onAddToCart();
         onClose();
       },
-      gradientColors: ['#FF9A44', '#FC5C7D'],
-      glowColor: '#FF9A44',
     },
     {
-      icon: 'share-social-outline',
-      label: 'Share Product',
+      icon: 'share-outline',
+      label: 'Share',
       onPress: () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         onShare();
         onClose();
       },
-      gradientColors: ['#4FACFE', '#00F2FE'],
-      glowColor: '#4FACFE',
     },
   ];
 
@@ -128,7 +121,7 @@ export default function ProductContextMenu({
   const borderColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(26,26,46,0.08)';
 
   const menuWidth = 260;
-  const menuHeight = 340;
+  const menuHeight = 300;
 
   let menuX = cardPosition ? cardPosition.x + cardPosition.width / 2 - menuWidth / 2 : SCREEN_WIDTH / 2 - menuWidth / 2;
   let menuY = cardPosition ? cardPosition.y - menuHeight - 10 : SCREEN_HEIGHT / 2 - menuHeight / 2;
@@ -163,8 +156,6 @@ export default function ProductContextMenu({
             },
           ]}
         >
-          <Animated.View style={styles.glowContainer} />
-
           <BlurView
             intensity={120}
             tint={isDark ? 'dark' : 'light'}
@@ -177,6 +168,7 @@ export default function ProductContextMenu({
               },
             ]}
           >
+            {/* Pointer arrow */}
             <View style={[
               styles.pointer,
               {
@@ -186,13 +178,14 @@ export default function ProductContextMenu({
               },
             ]} />
 
+            {/* Product preview */}
             <View style={styles.productPreview}>
               <View style={styles.productImageWrapper}>
                 {productImage ? (
                   <Image source={{ uri: productImage }} style={styles.productImage} />
                 ) : (
                   <View style={styles.productImagePlaceholder}>
-                    <Ionicons name="cube-outline" size={18} color="#FF6B6B" />
+                    <Ionicons name="cube-outline" size={18} color={subTextColor} />
                   </View>
                 )}
               </View>
@@ -203,6 +196,7 @@ export default function ProductContextMenu({
 
             <View style={[styles.divider, { backgroundColor: borderColor }]} />
 
+            {/* Menu options */}
             {menuOptions.map((option, index) => (
               <TouchableOpacity
                 key={option.label}
@@ -216,14 +210,7 @@ export default function ProductContextMenu({
                   },
                 ]}
               >
-                <LinearGradient
-                  colors={option.gradientColors as [string, string]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.optionIcon}
-                >
-                  <Ionicons name={option.icon as any} size={20} color="#FFFFFF" />
-                </LinearGradient>
+                <Ionicons name={option.icon as any} size={22} color={textColor} />
                 <Text style={[styles.menuItemText, { color: textColor }]}>
                   {option.label}
                 </Text>
@@ -231,6 +218,7 @@ export default function ProductContextMenu({
               </TouchableOpacity>
             ))}
 
+            {/* Close button */}
             <TouchableOpacity
               onPress={onClose}
               style={[styles.closeButton, { borderTopColor: borderColor }]}
@@ -258,19 +246,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 25,
     elevation: 20,
-  },
-  glowContainer: {
-    position: 'absolute',
-    top: -15,
-    left: -15,
-    right: -15,
-    bottom: -15,
-    borderRadius: 35,
-    shadowColor: '#FF6B00',
-    shadowOpacity: 0.12,
-    shadowOffset: { width: 0, height: 0 },
-    shadowRadius: 30,
-    backgroundColor: 'transparent',
   },
   blurContainer: {
     borderRadius: 20,
@@ -305,7 +280,7 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 10,
     overflow: 'hidden',
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: 'rgba(230, 10, 10, 0.05)',
   },
   productImage: {
     width: '100%',
@@ -317,7 +292,7 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,107,107,0.1)',
+    backgroundColor: 'rgba(0,0,0,0.03)',
   },
   productName: {
     fontSize: 13,
@@ -335,13 +310,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 4,
     gap: 12,
-  },
-  optionIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   menuItemText: {
     fontSize: 14,

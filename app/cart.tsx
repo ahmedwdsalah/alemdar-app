@@ -34,6 +34,7 @@ export default function CartScreen() {
     totalItems,
     totalPrice,
   } = useCart();
+  // ADDED: Currency conversion hook
   const { convertPrice } = useCurrency();
   const { mutate: placeOrder, isPending: isPlacingOrder } = usePlaceOrder();
   const scheme = useColorScheme();
@@ -266,6 +267,7 @@ export default function CartScreen() {
                       >
                         {item.name}
                       </Text>
+                      {/* UPDATED: Converted price */}
                       <Text
                         style={{
                           fontSize: 16,
@@ -404,6 +406,7 @@ export default function CartScreen() {
                     {t("cart.freeDelivery")}
                   </Text>
                 </Text>
+                {/*UPDATED: Converted total price */}
                 <Text style={{ fontSize: 22, fontWeight: "900", color: TEXT }}>
                   {convertPrice(totalPrice)}
                 </Text>
