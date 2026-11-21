@@ -10,7 +10,7 @@ if ! pnpm exec commitlint --edit "$1" >/dev/null 2>&1; then
   echo "  chore: update dependencies"
   echo ""
   echo "Allowed types:"
-  echo "  feat, fix, refactor, perf, test, docs, build, ci, chore, revert"
+  echo "  feat, fix, refactor, perf, test, docs, build, ci, chore, revert, builddevios, builddevandroid, buildprodios, buildprodandroid"
   echo ""
   echo "Please rewrite the commit message and try again."
   exit 1
