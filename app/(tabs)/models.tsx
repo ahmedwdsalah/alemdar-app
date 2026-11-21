@@ -1,3 +1,4 @@
+import type React from "react";
 import { SHOWCASE_MODELS, type ModelCategory } from "@/lib/mock-models";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -23,7 +24,11 @@ import {
   View,
 } from "react-native";
 import { Chip, RadioButton } from "react-native-paper";
-import Animated, { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDebounce } from "use-debounce";
 
@@ -46,13 +51,15 @@ export default function ModelsScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const insets = useSafeAreaInsets();
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<React.ComponentRef<typeof TextInput>>(null);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["55%"], []);
 
   const [showSearch, setShowSearch] = useState(false);
   const [query, setQuery] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<ModelCategory[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<ModelCategory[]>(
+    [],
+  );
   const [selectedSort, setSelectedSort] = useState("default");
 
   const [debouncedQuery] = useDebounce(query, 200);
@@ -75,7 +82,7 @@ export default function ModelsScreen() {
 
   const toggleCategory = (cat: ModelCategory) => {
     setSelectedCategories((prev) =>
-      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat],
     );
   };
 
@@ -88,7 +95,7 @@ export default function ModelsScreen() {
         (item) =>
           item.name.toLowerCase().includes(q) ||
           item.description.toLowerCase().includes(q) ||
-          item.material.toLowerCase().includes(q)
+          item.material.toLowerCase().includes(q),
       );
     }
 
@@ -132,13 +139,20 @@ export default function ModelsScreen() {
 
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
-      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.5} />
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.5}
+      />
     ),
-    []
+    [],
   );
 
   const headerTotalHeight =
-    insets.top + HEADER_HEIGHT + (showSearch ? 12 + SEARCH_ROW_HEIGHT + 12 : 12);
+    insets.top +
+    HEADER_HEIGHT +
+    (showSearch ? 12 + SEARCH_ROW_HEIGHT + 12 : 12);
 
   return (
     <View style={[styles.container, { backgroundColor: t.bg }]}>
@@ -158,7 +172,15 @@ export default function ModelsScreen() {
         keyboardDismissMode="on-drag"
         ItemSeparatorComponent={
           isSearching
-            ? () => <View style={{ height: 1, backgroundColor: t.border, marginLeft: 86 }} />
+            ? () => (
+                <View
+                  style={{
+                    height: 1,
+                    backgroundColor: t.border,
+                    marginLeft: 86,
+                  }}
+                />
+              )
             : undefined
         }
         ListHeaderComponent={
@@ -178,7 +200,11 @@ export default function ModelsScreen() {
                   paddingBottom: 8,
                 }}
               >
-                <Text style={{ color: t.text, fontSize: 15, fontWeight: "600" }}>Results</Text>
+                <Text
+                  style={{ color: t.text, fontSize: 15, fontWeight: "600" }}
+                >
+                  Results
+                </Text>
                 <Text style={{ color: t.subtext, fontSize: 13 }}>
                   {isDebouncing ? "…" : `${filteredModels.length} results`}
                 </Text>
@@ -190,13 +216,17 @@ export default function ModelsScreen() {
           isSearching && isDebouncing ? (
             <View style={styles.emptyState}>
               <ActivityIndicator size="large" color={t.accent} />
-              <Text style={{ color: t.subtext, fontSize: 13 }}>Searching...</Text>
+              <Text style={{ color: t.subtext, fontSize: 13 }}>
+                Searching...
+              </Text>
             </View>
           ) : (
             <View style={styles.emptyState}>
               <Text style={{ fontSize: 40 }}>🔍</Text>
               <Text style={{ color: t.subtext, fontSize: 15 }}>
-                {isSearching ? `No results for "${debouncedQuery}"` : "No models in this category yet."}
+                {isSearching
+                  ? `No results for "${debouncedQuery}"`
+                  : "No models in this category yet."}
               </Text>
             </View>
           )
@@ -209,16 +239,32 @@ export default function ModelsScreen() {
                 onPress={() => openModel(item)}
               >
                 <View style={styles.cardImageWrap}>
-                  <Image source={{ uri: item.thumbnail }} style={styles.cardImage} resizeMode="cover" />
+                  <Image
+                    source={{ uri: item.thumbnail }}
+                    style={styles.cardImage}
+                    resizeMode="cover"
+                  />
                   <View style={styles.cardPriceTag}>
-                    <Text style={styles.cardPriceText}>${item.price.toFixed(2)}</Text>
+                    <Text style={styles.cardPriceText}>
+                      ${item.price.toFixed(2)}
+                    </Text>
                   </View>
                 </View>
                 <View style={styles.cardBody}>
-                  <Text style={[styles.cardName, { color: t.text }]} numberOfLines={1}>{item.name}</Text>
+                  <Text
+                    style={[styles.cardName, { color: t.text }]}
+                    numberOfLines={1}
+                  >
+                    {item.name}
+                  </Text>
                   <View style={styles.cardMetaRow}>
                     <Ionicons name="cube-outline" size={11} color={t.subtext} />
-                    <Text style={[styles.cardMeta, { color: t.subtext }]} numberOfLines={1}>{item.material}</Text>
+                    <Text
+                      style={[styles.cardMeta, { color: t.subtext }]}
+                      numberOfLines={1}
+                    >
+                      {item.material}
+                    </Text>
                   </View>
                 </View>
               </Pressable>
@@ -256,10 +302,20 @@ export default function ModelsScreen() {
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Text numberOfLines={2} style={{ fontSize: 15, fontWeight: "500", color: t.text }}>
+                <Text
+                  numberOfLines={2}
+                  style={{ fontSize: 15, fontWeight: "500", color: t.text }}
+                >
                   {item.name}
                 </Text>
-                <Text style={{ fontSize: 13, fontWeight: "600", color: t.subtext, marginTop: 2 }}>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: "600",
+                    color: t.subtext,
+                    marginTop: 2,
+                  }}
+                >
                   {item.material}
                 </Text>
               </View>
@@ -274,7 +330,10 @@ export default function ModelsScreen() {
       <BlurView
         intensity={80}
         tint={isDark ? "dark" : "light"}
-        style={[styles.headerWrap, { height: headerTotalHeight, paddingTop: insets.top }]}
+        style={[
+          styles.headerWrap,
+          { height: headerTotalHeight, paddingTop: insets.top },
+        ]}
       >
         <View style={styles.headerRow}>
           <Text style={[styles.title, { color: t.text }]}>3D Models</Text>
@@ -285,10 +344,17 @@ export default function ModelsScreen() {
               style={styles.iconButton}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Ionicons name={showSearch ? "close" : "search"} size={20} color={t.text} />
+              <Ionicons
+                name={showSearch ? "close" : "search"}
+                size={20}
+                color={t.text}
+              />
             </TouchableOpacity>
 
-            <Pressable style={styles.uploadPill} onPress={() => router.push("/model-upload")}>
+            <Pressable
+              style={styles.uploadPill}
+              onPress={() => router.push("/model-upload")}
+            >
               <Ionicons name="cloud-upload-outline" size={15} color="#fff" />
               <Text style={styles.uploadPillText}>Upload</Text>
             </Pressable>
@@ -303,9 +369,21 @@ export default function ModelsScreen() {
           >
             <Animated.View
               layout={LinearTransition.duration(250)}
-              style={[styles.searchBar, { backgroundColor: t.inputBg, borderColor: t.border, height: SEARCH_ROW_HEIGHT }]}
+              style={[
+                styles.searchBar,
+                {
+                  backgroundColor: t.inputBg,
+                  borderColor: t.border,
+                  height: SEARCH_ROW_HEIGHT,
+                },
+              ]}
             >
-              <Ionicons name="search" size={18} color={t.subtext} style={{ marginRight: 10 }} />
+              <Ionicons
+                name="search"
+                size={18}
+                color={t.subtext}
+                style={{ marginRight: 10 }}
+              />
               <TextInput
                 ref={inputRef}
                 style={{ flex: 1, fontSize: 15, color: t.text }}
@@ -324,7 +402,11 @@ export default function ModelsScreen() {
               onPress={closeSearch}
               hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
             >
-              <Text style={{ color: t.accent, fontSize: 15, fontWeight: "600" }}>Cancel</Text>
+              <Text
+                style={{ color: t.accent, fontSize: 15, fontWeight: "600" }}
+              >
+                Cancel
+              </Text>
             </TouchableOpacity>
           </Animated.View>
         )}
@@ -342,14 +424,31 @@ export default function ModelsScreen() {
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={{ fontSize: 18, fontWeight: "700", color: t.text, marginBottom: 24, textAlign: "center" }}>
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: "700",
+              color: t.text,
+              marginBottom: 24,
+              textAlign: "center",
+            }}
+          >
             Filters
           </Text>
 
           <View style={{ marginBottom: 24 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 12,
+              }}
+            >
               <Ionicons name="grid-outline" size={16} color={t.accent} />
-              <Text style={{ fontSize: 14, fontWeight: "700", color: t.text }}>Category</Text>
+              <Text style={{ fontSize: 14, fontWeight: "700", color: t.text }}>
+                Category
+              </Text>
             </View>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
               {CATEGORY_FILTERS.map(({ key, label }) => {
@@ -361,8 +460,15 @@ export default function ModelsScreen() {
                     onPress={() => toggleCategory(key)}
                     mode={active ? "flat" : "outlined"}
                     showSelectedCheck
-                    style={{ backgroundColor: active ? t.accent : t.sheetBg, borderColor: active ? t.accent : t.border }}
-                    textStyle={{ color: active ? "#fff" : t.chipText, fontSize: 13, fontWeight: "500" }}
+                    style={{
+                      backgroundColor: active ? t.accent : t.sheetBg,
+                      borderColor: active ? t.accent : t.border,
+                    }}
+                    textStyle={{
+                      color: active ? "#fff" : t.chipText,
+                      fontSize: 13,
+                      fontWeight: "500",
+                    }}
                   >
                     {label}
                   </Chip>
@@ -372,11 +478,27 @@ export default function ModelsScreen() {
           </View>
 
           <View style={{ marginBottom: 32 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <Ionicons name="swap-vertical-outline" size={16} color={t.accent} />
-              <Text style={{ fontSize: 14, fontWeight: "700", color: t.text }}>Sort By</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 12,
+              }}
+            >
+              <Ionicons
+                name="swap-vertical-outline"
+                size={16}
+                color={t.accent}
+              />
+              <Text style={{ fontSize: 14, fontWeight: "700", color: t.text }}>
+                Sort By
+              </Text>
             </View>
-            <RadioButton.Group onValueChange={(val) => setSelectedSort(val)} value={selectedSort}>
+            <RadioButton.Group
+              onValueChange={(val) => setSelectedSort(val)}
+              value={selectedSort}
+            >
               {sortOptions.map(({ key, label }) => (
                 <RadioButton.Item
                   key={key}
@@ -397,12 +519,20 @@ export default function ModelsScreen() {
           </View>
 
           <View style={{ flexDirection: "row", gap: 12 }}>
-            <TouchableOpacity onPress={resetFilters} style={[styles.resetBtn, { borderColor: t.border }]}>
+            <TouchableOpacity
+              onPress={resetFilters}
+              style={[styles.resetBtn, { borderColor: t.border }]}
+            >
               <Ionicons name="refresh-outline" size={16} color={t.text} />
               <Text style={{ color: t.text, fontWeight: "600" }}>Reset</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={closeFilter} style={[styles.applyBtn, { backgroundColor: t.accent }]}>
-              <Text style={{ color: "#fff", fontWeight: "700", fontSize: 15 }}>Apply Filters</Text>
+            <TouchableOpacity
+              onPress={closeFilter}
+              style={[styles.applyBtn, { backgroundColor: t.accent }]}
+            >
+              <Text style={{ color: "#fff", fontWeight: "700", fontSize: 15 }}>
+                Apply Filters
+              </Text>
               <Ionicons name="arrow-forward" size={16} color="#fff" />
             </TouchableOpacity>
           </View>
@@ -462,11 +592,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
 
-  emptyState: { alignItems: "center", marginTop: 80, gap: 12, paddingHorizontal: 20 },
+  emptyState: {
+    alignItems: "center",
+    marginTop: 80,
+    gap: 12,
+    paddingHorizontal: 20,
+  },
 
   card: { flex: 1, borderRadius: 20, overflow: "hidden" },
   cardImageWrap: { padding: 8 },
-  cardImage: { width: "100%", aspectRatio: 1, borderRadius: 14, backgroundColor: "#00000006" },
+  cardImage: {
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: 14,
+    backgroundColor: "#00000006",
+  },
   cardPriceTag: {
     position: "absolute",
     bottom: 16,

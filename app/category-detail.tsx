@@ -1,9 +1,10 @@
+import type React from "react";
 import { CachedImage } from "@/components/CachedImage";
 import { ProductCard } from "@/components/ProductCard";
 import { useOfflineBannerVisible } from "@/hooks/useOfflineBanner";
 import { usePrefetchImages } from "@/hooks/usePrefetchImages";
 import { useSectionProducts } from "@/hooks/useSectionProducts";
-import { categoryIcons } from '@/lib/category-icons';
+import { categoryIcons } from "@/lib/category-icons";
 import { useLocale } from "@/lib/i18n";
 import { getSectionMeta } from "@/lib/section-meta";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,7 +14,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
-import { BlurView } from 'expo-blur';
+import { BlurView } from "expo-blur";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
@@ -27,11 +28,18 @@ import {
   TextInput,
   TouchableOpacity,
   useColorScheme,
-  View
+  View,
 } from "react-native";
 import { Chip, RadioButton } from "react-native-paper";
-import Animated, { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from "react-native-reanimated";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useDebounce } from "use-debounce";
 
 const PAGE_SIZE = 20;
@@ -53,7 +61,7 @@ export default function CategoryDetail() {
   const offlineBannerVisible = useOfflineBannerVisible();
   const insets = useSafeAreaInsets();
 
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<React.ComponentRef<typeof TextInput>>(null);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["55%"], []);
 
@@ -78,17 +86,21 @@ export default function CategoryDetail() {
     isLoading,
     isError,
     isFetchingNextPage,
+    isFetchNextPageError,
     isRefetching,
     hasNextPage,
     fetchNextPage,
     refetch,
   } = useSectionProducts(section, { limit: PAGE_SIZE });
 
-  const products = data?.pages.flatMap((p) => p.data) ?? [];
+  const products = useMemo(
+    () => data?.pages.flatMap((p) => p.data) ?? [],
+    [data],
+  );
 
   usePrefetchImages(products.map((p) => p.image_filename));
 
-  const bg = isDark ? "#000" : '#ffffff';
+  const bg = isDark ? "#000" : "#ffffff";
   const textColor = isDark ? "#fff" : "#000";
   const subText = isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)";
   const inputBg = isDark ? "#1A1A1A" : "#FFFFFF";
@@ -121,9 +133,14 @@ export default function CategoryDetail() {
 
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
-      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.5} />
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.5}
+      />
     ),
-    []
+    [],
   );
 
   // ⭐ Filtered products
@@ -133,7 +150,7 @@ export default function CategoryDetail() {
     if (debouncedQuery.trim().length > 0) {
       const q = debouncedQuery.trim().toLowerCase();
       list = list.filter((item: any) =>
-        (item.name ?? "").toLowerCase().includes(q)
+        (item.name ?? "").toLowerCase().includes(q),
       );
     }
 
@@ -151,9 +168,13 @@ export default function CategoryDetail() {
     }
 
     if (selectedSort === "price-low") {
-      list.sort((a: any, b: any) => (Number(a.price) ?? 0) - (Number(b.price) ?? 0));
+      list.sort(
+        (a: any, b: any) => (Number(a.price) ?? 0) - (Number(b.price) ?? 0),
+      );
     } else if (selectedSort === "price-high") {
-      list.sort((a: any, b: any) => (Number(b.price) ?? 0) - (Number(a.price) ?? 0));
+      list.sort(
+        (a: any, b: any) => (Number(b.price) ?? 0) - (Number(a.price) ?? 0),
+      );
     }
 
     return list;
@@ -184,12 +205,14 @@ export default function CategoryDetail() {
         <FlatList
           // ⭐ Force a remount when the layout mode changes
           key={isSearching ? "list" : "grid"}
-          data={isError ? [] : filteredProducts}
+          data={filteredProducts}
           keyExtractor={(item) => `${item.section}-${item.id}`}
           numColumns={isSearching ? 1 : 2}
-          columnWrapperStyle={isSearching ? undefined : { gap: 12, paddingHorizontal: 16 }}
+          columnWrapperStyle={
+            isSearching ? undefined : { gap: 12, paddingHorizontal: 16 }
+          }
           contentContainerStyle={{
-            flexGrow: isError || filteredProducts.length === 0 ? 1 : undefined,
+            flexGrow: filteredProducts.length === 0 ? 1 : undefined,
             paddingBottom: 40,
             gap: isSearching ? 0 : 12,
             // ⭐ Minimal padding - products start right under the header
@@ -205,7 +228,15 @@ export default function CategoryDetail() {
           // ⭐ Item separator for list mode
           ItemSeparatorComponent={
             isSearching
-              ? () => <View style={{ height: 1, backgroundColor: inputBorder, marginLeft: 86 }} />
+              ? () => (
+                  <View
+                    style={{
+                      height: 1,
+                      backgroundColor: inputBorder,
+                      marginLeft: 86,
+                    }}
+                  />
+                )
               : undefined
           }
           // ⭐ ListHeaderComponent with results count
@@ -226,7 +257,15 @@ export default function CategoryDetail() {
                     paddingBottom: 8,
                   }}
                 >
-                  <Text style={{ color: textColor, fontSize: 15, fontWeight: "600" }}>Results</Text>
+                  <Text
+                    style={{
+                      color: textColor,
+                      fontSize: 15,
+                      fontWeight: "600",
+                    }}
+                  >
+                    Results
+                  </Text>
                   <Text style={{ color: subText, fontSize: 13 }}>
                     {isDebouncing ? "…" : `${filteredProducts.length} results`}
                   </Text>
@@ -288,14 +327,30 @@ export default function CategoryDetail() {
                   )}
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text numberOfLines={2} style={{ fontSize: 15, fontWeight: "500", color: textColor }}>
+                  <Text
+                    numberOfLines={2}
+                    style={{
+                      fontSize: 15,
+                      fontWeight: "500",
+                      color: textColor,
+                    }}
+                  >
                     {item.name}
                   </Text>
-                  <Text style={{ fontSize: 13, fontWeight: "600", color: subText, marginTop: 2 }}>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: "600",
+                      color: subText,
+                      marginTop: 2,
+                    }}
+                  >
                     {meta.title}
                   </Text>
                 </View>
-                <Text style={{ fontSize: 14, fontWeight: "700", color: textColor }}>
+                <Text
+                  style={{ fontSize: 14, fontWeight: "700", color: textColor }}
+                >
                   {formatPrice(item.price)}
                 </Text>
               </TouchableOpacity>
@@ -311,21 +366,58 @@ export default function CategoryDetail() {
                 color={meta.accentColor}
                 style={{ marginVertical: 16 }}
               />
-            ) : null
+            ) : isError && products.length > 0 ? (
+              <TouchableOpacity
+                onPress={() =>
+                  void (isFetchNextPageError ? fetchNextPage() : refetch())
+                }
+                accessibilityRole="button"
+                style={{ alignItems: "center", padding: 16 }}
+              >
+                <Text style={{ color: subText }}>
+                  Couldn&apos;t load more products. Tap to retry.
+                </Text>
+              </TouchableOpacity>
+            ) : undefined
           }
           ListEmptyComponent={
-            isSearching && isDebouncing ? (
+            isLoading ? (
               <View style={styles.center}>
                 <ActivityIndicator size="large" color={meta.accentColor} />
-                <Text style={{ color: subText, fontSize: 13, marginTop: 12 }}>Searching...</Text>
+              </View>
+            ) : isError && products.length === 0 ? (
+              <View style={styles.center}>
+                <Text style={{ color: subText, fontSize: 15 }}>
+                  Couldn&apos;t load products.
+                </Text>
+                <TouchableOpacity
+                  onPress={() => void refetch()}
+                  accessibilityRole="button"
+                  style={{ padding: 12, marginTop: 8 }}
+                >
+                  <Text
+                    style={{
+                      color: meta.accentColor,
+                      fontSize: 15,
+                      fontWeight: "600",
+                    }}
+                  >
+                    Retry
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : isSearching && isDebouncing ? (
+              <View style={styles.center}>
+                <ActivityIndicator size="large" color={meta.accentColor} />
+                <Text style={{ color: subText, fontSize: 13, marginTop: 12 }}>
+                  Searching...
+                </Text>
               </View>
             ) : (
               <View style={styles.center}>
                 <Text style={{ fontSize: 40 }}>🔍</Text>
                 <Text style={{ color: subText, fontSize: 15, marginTop: 12 }}>
-                  {isError
-                    ? "Couldn't load products. Pull to retry."
-                    : isSearching
+                  {isSearching
                     ? `No results for "${debouncedQuery}"`
                     : "No products in this category."}
                 </Text>
@@ -339,22 +431,24 @@ export default function CategoryDetail() {
           intensity={80}
           tint={isDark ? "dark" : "light"}
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
             right: 0,
             zIndex: 10,
             paddingTop: insets.top,
-            overflow: 'hidden',
+            overflow: "hidden",
             borderBottomWidth: 1,
-            borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-            ...(Platform.OS === 'ios' && {
-              shadowColor: '#000',
+            borderBottomColor: isDark
+              ? "rgba(255,255,255,0.1)"
+              : "rgba(0,0,0,0.05)",
+            ...(Platform.OS === "ios" && {
+              shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.1,
               shadowRadius: 8,
             }),
-            ...(Platform.OS === 'android' && {
+            ...(Platform.OS === "android" && {
               elevation: 4,
             }),
           }}
@@ -367,7 +461,7 @@ export default function CategoryDetail() {
               <Ionicons name="arrow-back" size={24} color={textColor} />
             </TouchableOpacity>
 
-            <View style={{ flex: 1, alignItems: 'center' }}>
+            <View style={{ flex: 1, alignItems: "center" }}>
               {categoryIcon ? (
                 <CachedImage
                   source={categoryIcon}
@@ -376,7 +470,10 @@ export default function CategoryDetail() {
                 />
               ) : (
                 <View
-                  style={[styles.categoryIcon, { backgroundColor: meta.accentColor }]}
+                  style={[
+                    styles.categoryIcon,
+                    { backgroundColor: meta.accentColor },
+                  ]}
                 >
                   <Ionicons name={meta.icon} size={20} color="#fff" />
                 </View>
@@ -408,10 +505,19 @@ export default function CategoryDetail() {
                 layout={LinearTransition.duration(250)}
                 style={[
                   styles.searchBar,
-                  { backgroundColor: inputBg, borderColor: inputBorder, height: SEARCH_ROW_HEIGHT },
+                  {
+                    backgroundColor: inputBg,
+                    borderColor: inputBorder,
+                    height: SEARCH_ROW_HEIGHT,
+                  },
                 ]}
               >
-                <Ionicons name="search" size={18} color={subText} style={{ marginRight: 10 }} />
+                <Ionicons
+                  name="search"
+                  size={18}
+                  color={subText}
+                  style={{ marginRight: 10 }}
+                />
                 <TextInput
                   ref={inputRef}
                   style={{ flex: 1, fontSize: 15, color: textColor }}
@@ -421,8 +527,15 @@ export default function CategoryDetail() {
                   onChangeText={setQuery}
                   returnKeyType="search"
                 />
-                <TouchableOpacity onPress={openFilter} style={{ marginLeft: 8 }}>
-                  <Ionicons name="options-outline" size={20} color={meta.accentColor} />
+                <TouchableOpacity
+                  onPress={openFilter}
+                  style={{ marginLeft: 8 }}
+                >
+                  <Ionicons
+                    name="options-outline"
+                    size={20}
+                    color={meta.accentColor}
+                  />
                 </TouchableOpacity>
               </Animated.View>
 
@@ -430,7 +543,13 @@ export default function CategoryDetail() {
                 onPress={closeSearch}
                 hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
               >
-                <Text style={{ color: meta.accentColor, fontSize: 15, fontWeight: "600" }}>
+                <Text
+                  style={{
+                    color: meta.accentColor,
+                    fontSize: 15,
+                    fontWeight: "600",
+                  }}
+                >
                   Cancel
                 </Text>
               </TouchableOpacity>
@@ -452,17 +571,43 @@ export default function CategoryDetail() {
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={{ fontSize: 18, fontWeight: "700", color: textColor, marginBottom: 24, textAlign: "center" }}>
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: "700",
+              color: textColor,
+              marginBottom: 24,
+              textAlign: "center",
+            }}
+          >
             Filters
           </Text>
 
           {/* Sort */}
           <View style={{ marginBottom: 24 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <Ionicons name="swap-vertical-outline" size={16} color={meta.accentColor} />
-              <Text style={{ fontSize: 14, fontWeight: "700", color: textColor }}>Sort By</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 12,
+              }}
+            >
+              <Ionicons
+                name="swap-vertical-outline"
+                size={16}
+                color={meta.accentColor}
+              />
+              <Text
+                style={{ fontSize: 14, fontWeight: "700", color: textColor }}
+              >
+                Sort By
+              </Text>
             </View>
-            <RadioButton.Group onValueChange={(val) => setSelectedSort(val)} value={selectedSort}>
+            <RadioButton.Group
+              onValueChange={(val) => setSelectedSort(val)}
+              value={selectedSort}
+            >
               {sortOptions.map(({ key, label }) => (
                 <RadioButton.Item
                   key={key}
@@ -484,15 +629,36 @@ export default function CategoryDetail() {
 
           {/* Price range */}
           <View style={{ marginBottom: 24 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <Ionicons name="pricetag-outline" size={16} color={meta.accentColor} />
-              <Text style={{ fontSize: 14, fontWeight: "700", color: textColor }}>Price Range</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 12,
+              }}
+            >
+              <Ionicons
+                name="pricetag-outline"
+                size={16}
+                color={meta.accentColor}
+              />
+              <Text
+                style={{ fontSize: 14, fontWeight: "700", color: textColor }}
+              >
+                Price Range
+              </Text>
             </View>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
               <TextInput
                 style={[
                   styles.priceInput,
-                  { backgroundColor: inputBg, borderColor: inputBorder, color: textColor },
+                  {
+                    backgroundColor: inputBg,
+                    borderColor: inputBorder,
+                    color: textColor,
+                  },
                 ]}
                 placeholder="Min"
                 placeholderTextColor={subText}
@@ -504,7 +670,11 @@ export default function CategoryDetail() {
               <TextInput
                 style={[
                   styles.priceInput,
-                  { backgroundColor: inputBg, borderColor: inputBorder, color: textColor },
+                  {
+                    backgroundColor: inputBg,
+                    borderColor: inputBorder,
+                    color: textColor,
+                  },
                 ]}
                 placeholder="Max"
                 placeholderTextColor={subText}
@@ -517,9 +687,24 @@ export default function CategoryDetail() {
 
           {/* Availability */}
           <View style={{ marginBottom: 32 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <Ionicons name="checkmark-circle-outline" size={16} color={meta.accentColor} />
-              <Text style={{ fontSize: 14, fontWeight: "700", color: textColor }}>Availability</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 12,
+              }}
+            >
+              <Ionicons
+                name="checkmark-circle-outline"
+                size={16}
+                color={meta.accentColor}
+              />
+              <Text
+                style={{ fontSize: 14, fontWeight: "700", color: textColor }}
+              >
+                Availability
+              </Text>
             </View>
             <Chip
               selected={inStockOnly}
@@ -542,7 +727,10 @@ export default function CategoryDetail() {
           </View>
 
           <View style={{ flexDirection: "row", gap: 12 }}>
-            <TouchableOpacity onPress={resetFilters} style={[styles.resetBtn, { borderColor: inputBorder }]}>
+            <TouchableOpacity
+              onPress={resetFilters}
+              style={[styles.resetBtn, { borderColor: inputBorder }]}
+            >
               <Ionicons name="refresh-outline" size={16} color={textColor} />
               <Text style={{ color: textColor, fontWeight: "600" }}>Reset</Text>
             </TouchableOpacity>
@@ -550,7 +738,9 @@ export default function CategoryDetail() {
               onPress={closeFilter}
               style={[styles.applyBtn, { backgroundColor: meta.accentColor }]}
             >
-              <Text style={{ color: "#fff", fontWeight: "700", fontSize: 15 }}>Apply Filters</Text>
+              <Text style={{ color: "#fff", fontWeight: "700", fontSize: 15 }}>
+                Apply Filters
+              </Text>
               <Ionicons name="arrow-forward" size={16} color="#fff" />
             </TouchableOpacity>
           </View>

@@ -1,3 +1,4 @@
+import type React from "react";
 import { CachedImage } from "@/components/CachedImage";
 import { ProductCard } from "@/components/ProductCard";
 import { useWishlist } from "@/context/WishlistContext";
@@ -95,7 +96,7 @@ export default function SearchScreen() {
   const [selectedSort, setSelectedSort] = useState("Popularity");
   const [priceRange, setPriceRange] = useState([160, 2500]);
 
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<React.ComponentRef<typeof TextInput>>(null);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["88%"], []);
 

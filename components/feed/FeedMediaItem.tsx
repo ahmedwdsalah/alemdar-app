@@ -33,9 +33,9 @@ export default function FeedMediaItem({
   const shouldLoadSource = isVideo && (isActive || shouldPreload);
 
   const source: VideoSource | null = useMemo(
-  () => (shouldLoadSource ? { uri: item.uri, useCaching: true } : null),
-  [shouldLoadSource, item.uri]
-);
+    () => (shouldLoadSource ? { uri: item.uri, useCaching: true } : null),
+    [shouldLoadSource, item.uri],
+  );
 
   const player = useVideoPlayer(source, (p) => {
     p.loop = true;
@@ -47,9 +47,9 @@ export default function FeedMediaItem({
   const [muted, setMuted] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const iconOpacity = useRef(new Animated.Value(0)).current;
-  const heartScale = useRef(new Animated.Value(0)).current;
-  const heartOpacity = useRef(new Animated.Value(0)).current;
+  const [iconOpacity] = useState(() => new Animated.Value(0));
+  const [heartScale] = useState(() => new Animated.Value(0));
+  const [heartOpacity] = useState(() => new Animated.Value(0));
   const lastTapRef = useRef(0);
   const tapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -76,10 +76,13 @@ export default function FeedMediaItem({
   useEffect(() => {
     if (!isVideo) return;
     if (!isActive) {
+      // Reset the pause state when this item leaves the screen.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setManuallyPaused(false);
     }
   }, [isActive, isVideo]);
 
+  /* eslint-disable react-hooks/immutability -- expo-video controls its native player through mutable properties. */
   useEffect(() => {
     if (!isVideo || !player) return;
 
@@ -104,7 +107,16 @@ export default function FeedMediaItem({
       console.warn("[video player]", item.uri, error);
     }
     wasActiveRef.current = isActive;
-  }, [isActive, manuallyPaused, muted, shouldPreload, player, isVideo, item.uri]);
+  }, [
+    isActive,
+    manuallyPaused,
+    muted,
+    shouldPreload,
+    player,
+    isVideo,
+    item.uri,
+  ]);
+  /* eslint-enable react-hooks/immutability */
 
   useEffect(() => {
     Animated.timing(iconOpacity, {
@@ -201,11 +213,17 @@ export default function FeedMediaItem({
       {isVideo && shouldLoadSource && (
         <>
           <View style={styles.progressTrack} pointerEvents="none">
-            <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
+            <View
+              style={[styles.progressFill, { width: `${progress * 100}%` }]}
+            />
           </View>
 
           <Pressable onPress={toggleMute} style={styles.muteBtn} hitSlop={10}>
-            <Ionicons name={muted ? "volume-mute" : "volume-high"} size={18} color="#fff" />
+            <Ionicons
+              name={muted ? "volume-mute" : "volume-high"}
+              size={18}
+              color="#fff"
+            />
           </Pressable>
 
           <Animated.View
@@ -213,7 +231,12 @@ export default function FeedMediaItem({
             pointerEvents="none"
           >
             <View style={styles.pauseIconCircle}>
-              <Ionicons name="play" size={38} color="#fff" style={styles.playIconOffset} />
+              <Ionicons
+                name="play"
+                size={38}
+                color="#fff"
+                style={styles.playIconOffset}
+              />
             </View>
           </Animated.View>
         </>
@@ -260,7 +283,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   pauseIconWrap: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -274,7 +297,7 @@ const styles = StyleSheet.create({
   },
   playIconOffset: { marginLeft: 4 },
   heartBurstWrap: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
   },

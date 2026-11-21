@@ -138,6 +138,55 @@ export const SECTIONS: Record<string, SectionConfig> = {
     imageField: "image_filename",
     categoryField: "category",
   },
+  camera: {
+    table: "camera",
+    nameFields: ["english_name", "turkish_name"],
+    priceField: "price",
+    imageField: "image_filename",
+    categoryField: "category",
+  },
+  drone: {
+    table: "drone",
+    nameFields: ["english_names", "turkish_names"],
+    priceField: "price",
+    imageField: "image_filename",
+    categoryField: "category",
+  },
+  electronic_spare_parts: {
+    table: "electronic_spare_parts",
+    nameFields: ["english_names", "turkish_names"],
+    priceField: "price",
+    imageField: "image_filename",
+    categoryField: "category",
+  },
+  multimeter: {
+    table: "multimeter",
+    nameFields: ["english_names", "turkish_names"],
+    priceField: "price",
+    imageField: "image_filename",
+    categoryField: "category",
+  },
+  old_products: {
+    table: "old_products",
+    nameFields: ["english_names", "turkish_names"],
+    priceField: "price",
+    imageField: "image_filename",
+    categoryField: "category",
+  },
+  soldering_tool: {
+    table: "soldering_tool",
+    nameFields: ["english_names", "turkish_names"],
+    priceField: "price",
+    imageField: "image_filename",
+    categoryField: "category",
+  },
+  torch: {
+    table: "torch",
+    nameFields: ["english_names", "turkish_names"],
+    priceField: "price",
+    imageField: "image_filename",
+    categoryField: "category",
+  },
 };
 
 export const SECTION_KEYS = Object.keys(SECTIONS);
@@ -146,7 +195,7 @@ export function getSection(
   section: string | null | undefined,
 ): SectionConfig | undefined {
   if (!section) return undefined;
-  return SECTIONS[section];
+  return Object.hasOwn(SECTIONS, section) ? SECTIONS[section] : undefined;
 }
 
 /** Normalize a raw section row into a consistent product shape. */
@@ -161,7 +210,7 @@ export function normalizeRow(section: string, row: Record<string, any>) {
     id: row.id,
     section,
     name,
-    price: row[cfg.priceField] ?? null,
+    price: row.selling_price ?? row[cfg.priceField] ?? null,
     image_filename: cfg.imageField ? (row[cfg.imageField] ?? null) : null,
     category: cfg.categoryField ? (row[cfg.categoryField] ?? null) : null,
   };

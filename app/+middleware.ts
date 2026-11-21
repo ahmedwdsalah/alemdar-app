@@ -8,6 +8,13 @@ const ratelimit = new Ratelimit({
   prefix: "alemdar-api",
 });
 
+const readRatelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(300, "1 m"),
+  analytics: true,
+  prefix: "alemdar-api-read",
+});
+
 export const unstable_settings = {
   matcher: {
     patterns: ["/api/[...path]"],
@@ -19,8 +26,8 @@ function getClientIp(request: Request) {
   const firstForwardedIp = forwardedFor?.split(",")[0]?.trim();
 
   return (
-    firstForwardedIp ||
     request.headers.get("cf-connecting-ip") ||
+    firstForwardedIp ||
     request.headers.get("x-real-ip") ||
     "unknown"
   );
@@ -29,7 +36,11 @@ function getClientIp(request: Request) {
 export default async function middleware(request: Request) {
   const ip = getClientIp(request);
 
-  const { success, limit, remaining, reset } = await ratelimit.limit(ip);
+  const limiter =
+    request.method === "GET" || request.method === "HEAD"
+      ? readRatelimit
+      : ratelimit;
+  const { success, limit, remaining, reset } = await limiter.limit(ip);
 
   if (!success) {
     const retryAfter = Math.max(0, Math.ceil((reset - Date.now()) / 1000));

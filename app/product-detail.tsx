@@ -15,7 +15,7 @@ import { getSectionMeta } from "@/lib/section-meta";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -65,8 +65,8 @@ export default function ProductDetail() {
   const priceInUSD = parseFloat(`${whole}.${dec}`);
 
   const [, setAdded] = useState(false);
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [scaleAnim] = useState(() => new Animated.Value(1));
+  const [fadeAnim] = useState(() => new Animated.Value(0));
 
   const PAGE_BG = isDark ? "#131825" : "#ffffff";
   const TEXT = isDark ? "#ffffff" : "#111111";
@@ -88,27 +88,58 @@ export default function ProductDetail() {
     });
     setAdded(true);
     Animated.sequence([
-      Animated.spring(scaleAnim, { toValue: 0.92, useNativeDriver: true, speed: 30, bounciness: 10 }),
-      Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 14 }),
+      Animated.spring(scaleAnim, {
+        toValue: 0.92,
+        useNativeDriver: true,
+        speed: 30,
+        bounciness: 10,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        speed: 30,
+        bounciness: 14,
+      }),
     ]).start();
     Animated.sequence([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
       Animated.delay(1500),
-      Animated.timing(fadeAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
     ]).start(() => setAdded(false));
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: PAGE_BG }} edges={offlineBannerVisible ? ["bottom"] : ["top", "bottom"]}>
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={PAGE_BG} />
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: PAGE_BG }}
+      edges={offlineBannerVisible ? ["bottom"] : ["top", "bottom"]}
+    >
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-      <RNView style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingVertical: 14 }}>
+      <RNView
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: 20,
+          paddingVertical: 14,
+        }}
+      >
         <TouchableOpacity onPress={() => router.back()} style={{ padding: 4 }}>
           <Ionicons name="arrow-back" size={22} color={TEXT} />
         </TouchableOpacity>
 
-       
-        <TouchableOpacity onPress={() => router.push("/cart")} style={{ padding: 4 }}>
+        <TouchableOpacity
+          onPress={() => router.push("/cart")}
+          style={{ padding: 4 }}
+        >
           <RNView>
             <Ionicons name="cart-outline" size={22} color={TEXT} />
             {totalItems > 0 && (
@@ -136,89 +167,278 @@ export default function ProductDetail() {
       </RNView>
 
       {productUnavailableOffline ? (
-        <RNView style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32, gap: 16 }}>
+        <RNView
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            paddingHorizontal: 32,
+            gap: 16,
+          }}
+        >
           <Feather name="wifi-off" size={48} color={SUBTEXT} />
-          <Text style={{ color: TEXT, fontSize: 16, fontWeight: "700", textAlign: "center" }}>{t("offline.productUnavailable")}</Text>
-          <TouchableOpacity onPress={() => refetchProduct()} style={{ backgroundColor: AMBER, borderRadius: 10, paddingHorizontal: 18, paddingVertical: 10 }}>
+          <Text
+            style={{
+              color: TEXT,
+              fontSize: 16,
+              fontWeight: "700",
+              textAlign: "center",
+            }}
+          >
+            {t("offline.productUnavailable")}
+          </Text>
+          <TouchableOpacity
+            onPress={() => refetchProduct()}
+            style={{
+              backgroundColor: AMBER,
+              borderRadius: 10,
+              paddingHorizontal: 18,
+              paddingVertical: 10,
+            }}
+          >
             <Text style={{ color: "#000", fontWeight: "800" }}>Retry</Text>
           </TouchableOpacity>
         </RNView>
       ) : (
-      <>
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24 }}>
-        {/* IMAGE */}
-        <RNView style={{ height: 300, alignItems: "center", justifyContent: "center", marginBottom: 24 }}>
-          {productLoading ? (
-            <ActivityIndicator size="large" color={meta.accentColor} />
-          ) : image ? (
-            <CachedImage source={{ uri: image }} style={{ width: "100%", height: "100%", borderRadius: 12 }} contentFit="cover" recyclingKey={productId} />
-          ) : (
-            <Ionicons name="image-outline" size={80} color={isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)"} />
-          )}
-        </RNView>
-
-        {productLoading ? (
-          <>
-            <RNView style={{ height: 30, width: "85%", borderRadius: 8, backgroundColor: SKELETON, marginBottom: 14 }} />
-            <RNView style={{ height: 40, width: 150, borderRadius: 8, backgroundColor: SKELETON, marginBottom: 24 }} />
-          </>
-        ) : productError ? (
-          <RNView style={{ alignItems: "center", paddingVertical: 24, gap: 12 }}>
-            <Ionicons name="alert-circle-outline" size={36} color={SUBTEXT} />
-            <Text style={{ color: TEXT, fontSize: 16, fontWeight: "700" }}>Failed to load product</Text>
-            <TouchableOpacity onPress={() => refetchProduct()} style={{ backgroundColor: AMBER, borderRadius: 10, paddingHorizontal: 18, paddingVertical: 10 }}>
-              <Text style={{ color: "#000", fontWeight: "800" }}>Retry</Text>
-            </TouchableOpacity>
-          </RNView>
-        ) : (
-          <>
-            <Text style={{ fontSize: 13, color: SUBTEXT, fontWeight: "600", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8 }}>
-              {category || meta.title}
-            </Text>
-            <Text style={{ fontSize: 26, fontWeight: "800", color: TEXT, lineHeight: 32, letterSpacing: -0.5, marginBottom: 14 }}>{name}</Text>
-            <Text style={{ fontSize: 30, fontWeight: "800", color: TEXT, marginBottom: 28 }}>{convertPrice(priceInUSD)}</Text>
-
-            <RNView style={{ borderTopWidth: 1, borderTopColor: BORDER, marginBottom: 28 }}>
-              {[
-                { label: t("product.category"), value: category || meta.title },
-                { label: t("product.sku"), value: `AT-${section.toUpperCase()}-${productId.padStart(3, "0")}` },
-                { label: t("product.shipping"), value: t("product.shippingValue") },
-              ].map((row) => (
-                <RNView key={row.label} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: BORDER }}>
-                  <Text style={{ fontSize: 13, color: SUBTEXT }}>{row.label}</Text>
-                  <Text style={{ fontSize: 13, fontWeight: "600", color: TEXT }}>{row.value}</Text>
-                </RNView>
-              ))}
+        <>
+          <ScrollView
+            style={{ flex: 1 }}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 24 }}
+          >
+            {/* IMAGE */}
+            <RNView
+              style={{
+                height: 300,
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 24,
+              }}
+            >
+              {productLoading ? (
+                <ActivityIndicator size="large" color={meta.accentColor} />
+              ) : image ? (
+                <CachedImage
+                  source={{ uri: image }}
+                  style={{ width: "100%", height: "100%", borderRadius: 12 }}
+                  contentFit="cover"
+                  recyclingKey={productId}
+                />
+              ) : (
+                <Ionicons
+                  name="image-outline"
+                  size={80}
+                  color={isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)"}
+                />
+              )}
             </RNView>
-          </>
-        )}
 
-        {relatedProducts.length > 0 && (
-          <RNView style={{ marginBottom: 24 }}>
-            <Text style={{ fontSize: 13, color: SUBTEXT, fontWeight: "600", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 14 }}>
-              {t("product.moreFrom", { title: meta.title })}
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 4 }}>
-              {relatedProducts.map((rel) => (
-                <ProductCard key={`${rel.section}-${rel.id}`} product={rel} sectionTitle={meta.title} accentColor={meta.accentColor} width={148} />
-              ))}
-            </ScrollView>
+            {productLoading ? (
+              <>
+                <RNView
+                  style={{
+                    height: 30,
+                    width: "85%",
+                    borderRadius: 8,
+                    backgroundColor: SKELETON,
+                    marginBottom: 14,
+                  }}
+                />
+                <RNView
+                  style={{
+                    height: 40,
+                    width: 150,
+                    borderRadius: 8,
+                    backgroundColor: SKELETON,
+                    marginBottom: 24,
+                  }}
+                />
+              </>
+            ) : productError ? (
+              <RNView
+                style={{ alignItems: "center", paddingVertical: 24, gap: 12 }}
+              >
+                <Ionicons
+                  name="alert-circle-outline"
+                  size={36}
+                  color={SUBTEXT}
+                />
+                <Text style={{ color: TEXT, fontSize: 16, fontWeight: "700" }}>
+                  Failed to load product
+                </Text>
+                <TouchableOpacity
+                  onPress={() => refetchProduct()}
+                  style={{
+                    backgroundColor: AMBER,
+                    borderRadius: 10,
+                    paddingHorizontal: 18,
+                    paddingVertical: 10,
+                  }}
+                >
+                  <Text style={{ color: "#000", fontWeight: "800" }}>
+                    Retry
+                  </Text>
+                </TouchableOpacity>
+              </RNView>
+            ) : (
+              <>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: SUBTEXT,
+                    fontWeight: "600",
+                    letterSpacing: 0.8,
+                    textTransform: "uppercase",
+                    marginBottom: 8,
+                  }}
+                >
+                  {category || meta.title}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 26,
+                    fontWeight: "800",
+                    color: TEXT,
+                    lineHeight: 32,
+                    letterSpacing: -0.5,
+                    marginBottom: 14,
+                  }}
+                >
+                  {name}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 30,
+                    fontWeight: "800",
+                    color: TEXT,
+                    marginBottom: 28,
+                  }}
+                >
+                  {convertPrice(priceInUSD)}
+                </Text>
+
+                <RNView
+                  style={{
+                    borderTopWidth: 1,
+                    borderTopColor: BORDER,
+                    marginBottom: 28,
+                  }}
+                >
+                  {[
+                    {
+                      label: t("product.category"),
+                      value: category || meta.title,
+                    },
+                    {
+                      label: t("product.sku"),
+                      value: `AT-${section.toUpperCase()}-${productId.padStart(3, "0")}`,
+                    },
+                    {
+                      label: t("product.shipping"),
+                      value: t("product.shippingValue"),
+                    },
+                  ].map((row) => (
+                    <RNView
+                      key={row.label}
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        paddingVertical: 12,
+                        borderBottomWidth: 1,
+                        borderBottomColor: BORDER,
+                      }}
+                    >
+                      <Text style={{ fontSize: 13, color: SUBTEXT }}>
+                        {row.label}
+                      </Text>
+                      <Text
+                        style={{ fontSize: 13, fontWeight: "600", color: TEXT }}
+                      >
+                        {row.value}
+                      </Text>
+                    </RNView>
+                  ))}
+                </RNView>
+              </>
+            )}
+
+            {relatedProducts.length > 0 && (
+              <RNView style={{ marginBottom: 24 }}>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: SUBTEXT,
+                    fontWeight: "600",
+                    letterSpacing: 0.8,
+                    textTransform: "uppercase",
+                    marginBottom: 14,
+                  }}
+                >
+                  {t("product.moreFrom", { title: meta.title })}
+                </Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 4 }}
+                >
+                  {relatedProducts.map((rel) => (
+                    <ProductCard
+                      key={`${rel.section}-${rel.id}`}
+                      product={rel}
+                      sectionTitle={meta.title}
+                      accentColor={meta.accentColor}
+                      width={148}
+                    />
+                  ))}
+                </ScrollView>
+              </RNView>
+            )}
+          </ScrollView>
+
+          {/* BOTTOM BAR */}
+          <RNView
+            style={{
+              borderTopWidth: 1,
+              borderTopColor: BORDER,
+              paddingHorizontal: 24,
+              paddingVertical: 16,
+            }}
+          >
+            <Animated.View
+              style={{
+                opacity: fadeAnim,
+                alignItems: "center",
+                marginBottom: 6,
+              }}
+            >
+              <Text
+                style={{ fontSize: 12, color: "#2ecc71", fontWeight: "600" }}
+              >
+                ✓ {t("product.addedToCart")}
+              </Text>
+            </Animated.View>
+            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+              <TouchableOpacity
+                onPress={handleAddToCart}
+                disabled={!product || productLoading || productError}
+                activeOpacity={0.85}
+                style={{
+                  backgroundColor: product && !productError ? TEXT : "#ccc",
+                  borderRadius: 10,
+                  height: 52,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{ fontSize: 14, fontWeight: "700", color: PAGE_BG }}
+                >
+                  {productLoading ? "..." : t("addToCart")}
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
           </RNView>
-        )}
-      </ScrollView>
-
-      {/* BOTTOM BAR */}
-      <RNView style={{ borderTopWidth: 1, borderTopColor: BORDER, paddingHorizontal: 24, paddingVertical: 16 }}>
-        <Animated.View style={{ opacity: fadeAnim, alignItems: "center", marginBottom: 6 }}>
-          <Text style={{ fontSize: 12, color: "#2ecc71", fontWeight: "600" }}>✓ {t("product.addedToCart")}</Text>
-        </Animated.View>
-        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-          <TouchableOpacity onPress={handleAddToCart} disabled={!product || productLoading || productError} activeOpacity={0.85} style={{ backgroundColor: product && !productError ? TEXT : "#ccc", borderRadius: 10, height: 52, alignItems: "center", justifyContent: "center" }}>
-            <Text style={{ fontSize: 14, fontWeight: "700", color: PAGE_BG }}>{productLoading ? "..." : t("addToCart")}</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      </RNView>
-      </>
+        </>
       )}
     </SafeAreaView>
   );
