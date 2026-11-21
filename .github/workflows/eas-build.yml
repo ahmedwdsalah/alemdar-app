@@ -15,22 +15,50 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+
       - uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
       - name: Queue development iOS build
-        run: eas workflow:run .eas/workflows/development-ios.yml --non-interactive
+        run: eas build --platform ios --profile development --non-interactive --no-wait
 
   build-development-android:
     if: contains(join(github.event.commits.*.message, ' '), 'builddevandroid:')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Verify expo-dev-client
+        run: node -p "require.resolve('expo-dev-client/package.json')"
+
       - uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
+
       - name: Queue development Android build
         run: eas build --platform android --profile development --non-interactive --no-wait
 
@@ -39,9 +67,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+
       - uses: pnpm/action-setup@v4
         with:
           version: 10.8.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - uses: expo/expo-github-action@v8
         with:
@@ -55,6 +90,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+
       - uses: expo/expo-github-action@v8
         with:
           eas-version: latest
