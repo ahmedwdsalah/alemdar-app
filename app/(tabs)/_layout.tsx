@@ -16,7 +16,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 
-const ONBOARDING_KEY = "onboarding_done_v5";// bump it to the next number for the boarding flow to appear v5 to v6 
+const ONBOARDING_KEY = "onboarding_done_v5"; // bump it to the next number for the boarding flow to appear v5 to v6
 
 let _set: ((s: string | null) => void) | null = null;
 export const openSheet = (s: string) => _set?.(s);
@@ -67,11 +67,7 @@ export default function TabLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
-        <StatusBar
-          style={isDark ? "light" : "dark"}
-          backgroundColor="transparent"
-          translucent
-        />
+        <StatusBar style={isDark ? "light" : "dark"} />
         <Tabs
           screenOptions={{
             headerShown: false,
@@ -109,12 +105,18 @@ export default function TabLayout() {
           <Tabs.Screen
             name="feed"
             options={{
-             title: "Feed",
-             tabBarIcon: ({ color }) => (
-      <Ionicons name="play-circle-outline" size={26} color={color} />
-    ),
-  }}
-/>
+              title: "Feed",
+              tabBarIcon: ({ color }) => (
+                <Ionicons
+                  name="play-circle-outline"
+                  size={26}
+                  color={
+                    typeof color === "number" ? undefined : (color ?? undefined)
+                  }
+                />
+              ),
+            }}
+          />
           <Tabs.Screen
             name="search"
             options={{
@@ -143,21 +145,33 @@ export default function TabLayout() {
               ),
             }}
           />
-             <Tabs.Screen
-          name="models"
-          options={{
-           title: "3D Models",
-          tabBarIcon: ({ color }) => (
-          <Ionicons name="cube-outline" size={26} color={color} />
-    ),
-  }}
-/>
+          <Tabs.Screen
+            name="models"
+            options={{
+              title: "3D Models",
+              tabBarIcon: ({ color }) => (
+                <Ionicons
+                  name="cube-outline"
+                  size={26}
+                  color={
+                    typeof color === "number" ? undefined : (color ?? undefined)
+                  }
+                />
+              ),
+            }}
+          />
           <Tabs.Screen
             name="center"
             options={{
               title: "Services",
               tabBarIcon: ({ color }) => (
-                <Ionicons name="headset-outline" size={26} color={color} />
+                <Ionicons
+                  name="headset-outline"
+                  size={26}
+                  color={
+                    typeof color === "number" ? undefined : (color ?? undefined)
+                  }
+                />
               ),
             }}
           />
@@ -165,29 +179,69 @@ export default function TabLayout() {
         <PrivacySheet visible={sheet === "privacy"} onClose={closeSheets} />
         <LanguageSheet visible={sheet === "language"} onClose={closeSheets} />
         <SettingsSheet visible={sheet === "settings"} onClose={closeSheets} />
-        <OnboardingSheet visible={showOnboarding} onClose={handleOnboardingClose} />
+        <OnboardingSheet
+          visible={showOnboarding}
+          onClose={handleOnboardingClose}
+        />
         <BottomSheet
           ref={serviceSheetRef}
           height={320}
-          style={{ backgroundColor: "#101928", borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+          style={{
+            backgroundColor: "#101928",
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+          }}
           closeOnDragDown
           closeOnBackdropPress
           onClose={hideServiceConfirm}
         >
-          <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24, gap: 12 }}>
-            <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: "#1F883D20", alignItems: "center", justifyContent: "center" }}>
+          <View
+            style={{
+              flex: 1,
+              alignItems: "center",
+              justifyContent: "center",
+              paddingHorizontal: 24,
+              gap: 12,
+            }}
+          >
+            <View
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: 36,
+                backgroundColor: "#1F883D20",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Ionicons name="checkmark-circle" size={44} color="#1F883D" />
             </View>
-            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "700" }}>Request Sent</Text>
-            <Text style={{ color: "#A9AEC0", fontSize: 14, textAlign: "center" }}>
-              {confirmService ? `Your ${confirmService.toLowerCase()} service request has been submitted. We'll connect you with a professional shortly.` : "We'll connect you with a professional shortly."}
+            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "700" }}>
+              Request Sent
+            </Text>
+            <Text
+              style={{ color: "#A9AEC0", fontSize: 14, textAlign: "center" }}
+            >
+              {confirmService
+                ? `Your ${confirmService.toLowerCase()} service request has been submitted. We'll connect you with a professional shortly.`
+                : "We'll connect you with a professional shortly."}
             </Text>
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={hideServiceConfirm}
-              style={{ marginTop: 8, backgroundColor: "#FF6B00", borderRadius: 14, paddingHorizontal: 32, paddingVertical: 14, width: "100%", alignItems: "center" }}
+              style={{
+                marginTop: 8,
+                backgroundColor: "#FF6B00",
+                borderRadius: 14,
+                paddingHorizontal: 32,
+                paddingVertical: 14,
+                width: "100%",
+                alignItems: "center",
+              }}
             >
-              <Text style={{ color: "#fff", fontSize: 14, fontWeight: "700" }}>Done</Text>
+              <Text style={{ color: "#fff", fontSize: 14, fontWeight: "700" }}>
+                Done
+              </Text>
             </TouchableOpacity>
           </View>
         </BottomSheet>

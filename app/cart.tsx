@@ -93,10 +93,7 @@ export default function CartScreen() {
       style={{ flex: 1, backgroundColor: isDark ? "#0d0d0d" : "#ffffff" }}
       edges={offlineBannerVisible ? ["bottom"] : ["top", "bottom"]}
     >
-      <StatusBar
-        barStyle={isDark ? "light-content" : "dark-content"}
-        backgroundColor={isDark ? "#0d0d0d" : "#ffffff"}
-      />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
       <RNView
         style={{

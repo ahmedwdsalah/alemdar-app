@@ -83,13 +83,17 @@ function Scene({ glbUrl }: Pick<Props, "glbUrl">) {
   );
 }
 
-export default function FilamentModelViewer({ glbUrl, backgroundColor }: Props) {
+export default function FilamentModelViewer({
+  glbUrl,
+  backgroundColor,
+}: Props) {
   const isDark = useColorScheme() === "dark";
 
   // ⭐ Falls back to a theme-matched background when no explicit
   // backgroundColor is passed in. Pass backgroundColor as a prop
   // to override this on a per-screen basis if you ever need to.
-  const resolvedBackground = backgroundColor ?? (isDark ? "#101928" : "#F1F3F6");
+  const resolvedBackground =
+    backgroundColor ?? (isDark ? "#101928" : "#F1F3F6");
 
   return (
     <View style={[styles.container, { backgroundColor: resolvedBackground }]}>
@@ -104,7 +108,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   viewer: { flex: 1 },
   loading: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
   },

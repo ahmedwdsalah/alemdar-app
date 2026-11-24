@@ -8,7 +8,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "alemdarapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "updates": {
       "url": "https://u.expo.dev/e55a9ffa-6a84-4040-8411-c925bf972eac"
     },
@@ -26,7 +25,6 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -64,7 +62,9 @@
         }
       ],
       "expo-video",
-      "expo-asset"
+      "expo-asset",
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
@@ -77,6 +77,6 @@
         "projectId": "e55a9ffa-6a84-4040-8411-c925bf972eac"
       }
     },
-    "owner": "ahmedsalah998"
+    "owner": "ahmed-org"
   }
 }

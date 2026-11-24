@@ -1,16 +1,17 @@
-import { prisma } from '@/lib/prisma';
-import { error, json } from '@/lib/http';
-import { getSection, normalizeRow } from '@/lib/sections';
+import { createPrisma } from "@/lib/prisma";
+import { error, json } from "@/lib/http";
+import { getSection, normalizeRow } from "@/lib/sections";
 
 export async function GET(request: Request, { id }: Record<string, string>) {
   const productId = Number(id);
   if (!Number.isInteger(productId)) {
-    return error('Invalid product id', 400);
+    return error("Invalid product id", 400);
   }
 
+  const prisma = createPrisma();
   try {
     const url = new URL(request.url);
-    const section = url.searchParams.get('section');
+    const section = url.searchParams.get("section");
 
     if (section) {
       const cfg = getSection(section);
@@ -19,17 +20,19 @@ export async function GET(request: Request, { id }: Record<string, string>) {
       const delegate = (prisma as any)[cfg.table];
       const row = await delegate.findUnique({ where: { id: productId } });
       if (!row) {
-        return error('Product not found', 404);
+        return error("Product not found", 404);
       }
       return json(normalizeRow(section, row));
     }
 
     const product = await prisma.main.findUnique({ where: { id: productId } });
     if (!product) {
-      return error('Product not found', 404);
+      return error("Product not found", 404);
     }
     return json(product);
-  } catch (e) {
-    return error('Failed to load product', 500);
+  } catch {
+    return error("Failed to load product", 500);
+  } finally {
+    await prisma.$disconnect();
   }
 }

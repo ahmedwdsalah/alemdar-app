@@ -1,0 +1,63 @@
+name: EAS Build
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  # Commit messages containing builddevios: queue the native iOS development workflow.
+  build-development-ios:
+    if: contains(join(github.event.commits.*.message, ' '), 'builddevios:')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Queue development iOS build
+        run: eas workflow:run .eas/workflows/development-ios.yml --non-interactive
+
+  build-development-android:
+    if: contains(join(github.event.commits.*.message, ' '), 'builddevandroid:')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Queue development Android build
+        run: eas build --platform android --profile development --non-interactive --no-wait
+
+  build-production-ios:
+    if: contains(join(github.event.commits.*.message, ' '), 'buildprodios:')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.0
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Queue production iOS build
+        run: eas build --platform ios --profile production --non-interactive --no-wait
+
+  build-production-android:
+    if: contains(join(github.event.commits.*.message, ' '), 'buildprodandroid:')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Queue production Android build
+        run: eas build --platform android --profile production --non-interactive --no-wait

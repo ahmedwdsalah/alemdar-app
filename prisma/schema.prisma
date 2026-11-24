@@ -41,6 +41,7 @@ model account_subscription_preferences {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model adapters {
+  selling_price Decimal? @db.Decimal
   id             Int     @id @default(autoincrement())
   english_names  String?
   turkish_names  String?
@@ -54,6 +55,7 @@ model adapters {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model arduino {
+  selling_price Decimal? @db.Decimal
   id               Int      @id @default(autoincrement())
   english_names    String?  @db.VarChar(255)
   turkish_names    String?  @db.VarChar(255)
@@ -83,6 +85,7 @@ model arduino_category_options {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model batteries {
+  selling_price Decimal? @db.Decimal
   id             Int      @id @default(autoincrement())
   model          String   @db.VarChar(255)
   volt           Decimal  @db.Decimal(4, 1)
@@ -96,6 +99,7 @@ model batteries {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model chargers {
+  selling_price Decimal? @db.Decimal
   id             Int     @id @default(autoincrement())
   english_names  String?
   turkish_names  String?
@@ -117,6 +121,7 @@ model deployment_updates {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model electric {
+  selling_price Decimal? @db.Decimal
   id             Int     @id @default(autoincrement())
   english_names  String?
   turkish_names  String?
@@ -130,6 +135,7 @@ model electric {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model fans {
+  selling_price Decimal? @db.Decimal
   id             Int     @id @default(autoincrement())
   english_names  String?
   turkish_names  String?
@@ -143,6 +149,7 @@ model fans {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model filaments {
+  selling_price Decimal? @db.Decimal
   id             Int      @id @default(autoincrement())
   name           String
   brand          String
@@ -192,6 +199,7 @@ model invoices {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model lamps {
+  selling_price Decimal? @db.Decimal
   id             Int     @id @default(autoincrement())
   english_names  String?
   turkish_names  String?
@@ -235,6 +243,7 @@ model main {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model mainled {
+  selling_price Decimal? @db.Decimal
   id             Int      @id
   english_name   String?  @db.VarChar
   turkish_name   String?  @db.VarChar
@@ -275,6 +284,7 @@ model mexxsun {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model others {
+  selling_price Decimal? @db.Decimal
   id             Int     @id @default(autoincrement())
   english_names  String?
   turkish_names  String?
@@ -312,6 +322,7 @@ model repair_callback_requests {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model scrawesdriver {
+  selling_price Decimal? @db.Decimal
   id             Int     @id @default(autoincrement())
   english_names  String?
   turkish_names  String?
@@ -376,6 +387,7 @@ model solardb {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model sound {
+  selling_price Decimal? @db.Decimal
   english_name        String?   @db.VarChar
   turkish_name        String?   @db.VarChar
   barcode             String?   @db.VarChar
@@ -400,6 +412,7 @@ model sound {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model spray_gum {
+  selling_price Decimal? @db.Decimal
   id             Int     @id @default(autoincrement())
   english_name   String?
   turkish_name   String?
@@ -417,6 +430,7 @@ model spray_gum {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model tv_remotes {
+  selling_price Decimal? @db.Decimal
   id             Int      @id @default(autoincrement())
   name           String
   brand          String
@@ -427,4 +441,74 @@ model tv_remotes {
   quantity       Int?     @default(0)
   price          Decimal? @db.Decimal
   barcode        String?  @db.VarChar
+}
+
+model drone {
+  id Int @id
+  english_names String?
+  turkish_names String?
+  category String?
+  price String?
+  selling_price Decimal? @db.Decimal
+  image_filename String?
+}
+
+model electronic_spare_parts {
+  id Int @id
+  english_names String?
+  turkish_names String?
+  category String?
+  price String?
+  selling_price Decimal? @db.Decimal
+  image_filename String?
+}
+
+model multimeter {
+  id Int @id
+  english_names String?
+  turkish_names String?
+  category String?
+  price String?
+  selling_price Decimal? @db.Decimal
+  image_filename String?
+}
+
+model old_products {
+  id Int @id
+  english_names String?
+  turkish_names String?
+  category String?
+  price String?
+  selling_price Decimal? @db.Decimal
+  image_filename String?
+}
+
+model soldering_tool {
+  id Int @id
+  english_names String?
+  turkish_names String?
+  category String?
+  price String?
+  selling_price Decimal? @db.Decimal
+  image_filename String?
+}
+
+model torch {
+  id Int @id
+  english_names String?
+  turkish_names String?
+  category String?
+  price String?
+  selling_price Decimal? @db.Decimal
+  image_filename String?
+}
+
+model camera {
+  id Int @id
+  english_name String?
+  turkish_name String?
+  category String?
+  price Decimal? @db.Decimal
+  selling_price Decimal? @db.Decimal
+  image_filename String?
 }
