@@ -1,0 +1,84 @@
+diff --git a/ios/Worklets.h b/ios/Worklets.h
+index 8e57ca9a2966c05584a02a7ab50a3a51a4f233df..9f4a6c00c489e3305492ec1ac9c8f5cd1b461019 100644
+--- a/ios/Worklets.h
++++ b/ios/Worklets.h
+@@ -4,8 +4,9 @@
+ 
+ #ifdef RCT_NEW_ARCH_ENABLED
+ #import "RNWorkletsSpec.h"
++#import <ReactCommon/RCTTurboModuleWithJSIBindings.h>
+ 
+-@interface Worklets : NSObject <NativeWorkletsSpec>
++@interface Worklets : NSObject <NativeWorkletsSpec, RCTTurboModuleWithJSIBindings>
+ #else
+ #import <React/RCTBridgeModule.h>
+ 
+diff --git a/ios/Worklets.mm b/ios/Worklets.mm
+index 403d88bf7d89f57ac18fdffe4b7aa839a62234b0..7ee54747f93d21bb06cd9ecfce9b6833f8c7002a 100644
+--- a/ios/Worklets.mm
++++ b/ios/Worklets.mm
+@@ -1,9 +1,9 @@
+ #import "Worklets.h"
+ 
+-#import <React/RCTBridge+Private.h>
+ #import <React/RCTBridge.h>
+ #import <React/RCTUtils.h>
+ #import <ReactCommon/RCTTurboModule.h>
++#import <ReactCommon/RCTTurboModuleWithJSIBindings.h>
+ 
+ @implementation Worklets
+ 
+@@ -25,43 +25,29 @@ RCT_EXPORT_MODULE()
+   return YES;
+ }
+ 
+-void installApi(std::shared_ptr<facebook::react::CallInvoker> callInvoker,
+-                facebook::jsi::Runtime *runtime) {
+-  // Initialize the default worklet context
++static void installApi(std::shared_ptr<facebook::react::CallInvoker> callInvoker,
++                       facebook::jsi::Runtime *runtime) {
+   RNWorklet::JsiWorkletContext::getDefaultInstance()->initialize(
+       "default", runtime, [=](std::function<void()> &&f) {
+         callInvoker->invokeAsync(std::move(f));
+       });
+-
+-  // Install the worklet API
+   RNWorklet::JsiWorkletApi::installApi(*runtime);
+ }
+ 
+-RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install) {
+-  RCTCxxBridge *cxxBridge = (RCTCxxBridge *)_bridge;
+-  if (cxxBridge.runtime != nullptr) {
+-    auto callInvoker = cxxBridge.jsCallInvoker;
+-    facebook::jsi::Runtime *jsRuntime =
+-        (facebook::jsi::Runtime *)cxxBridge.runtime;
++// React Native 0.87+ removed RCTCxxBridge. The runtime and call invoker
++// now arrive through RCTTurboModuleWithJSIBindings when the module is created.
++- (void)installJSIBindingsWithRuntime:(facebook::jsi::Runtime &)runtime
++                          callInvoker:(const std::shared_ptr<facebook::react::CallInvoker> &)callInvoker {
++  installApi(callInvoker, &runtime);
++}
+ 
+-    installApi(callInvoker, jsRuntime);
+-    return @true;
+-  }
+-  return @false;
++RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install) {
++  return @true;
+ }
+ 
+-// Don't compile this code when we build for the old architecture.
+ #ifdef RCT_NEW_ARCH_ENABLED
+ - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+     (const facebook::react::ObjCTurboModule::InitParams &)params {
+-  // Call installApi with c++ brigde or something similar.
+-  RCTCxxBridge *cxxBridge = (RCTCxxBridge *)_bridge;
+-  auto callInvoker = cxxBridge.jsCallInvoker;
+-  facebook::jsi::Runtime *jsRuntime =
+-      (facebook::jsi::Runtime *)cxxBridge.runtime;
+-
+-  installApi(callInvoker, jsRuntime);
+-
+   return std::make_shared<facebook::react::NativeWorkletsSpecJSI>(params);
+ }
+ #endif

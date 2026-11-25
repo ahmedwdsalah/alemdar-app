@@ -10,3 +10,6 @@ allowBuilds:
   "@prisma/engines": false
   prisma: false
   unrs-resolver: set this to true or false
+
+patchedDependencies:
+  react-native-worklets-core@1.6.3: patches/react-native-worklets-core@1.6.3.patch
