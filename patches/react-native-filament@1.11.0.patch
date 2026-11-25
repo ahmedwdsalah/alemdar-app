@@ -1,0 +1,74 @@
+diff --git a/ios/src/RNFFilamentInstaller.mm b/ios/src/RNFFilamentInstaller.mm
+index af9f54826458c10e0bb3bfc5a5fd8a12372e0c1f..2ec896abfa700782c76fa77b4b8ddbd0dc33f87d 100644
+--- a/ios/src/RNFFilamentInstaller.mm
++++ b/ios/src/RNFFilamentInstaller.mm
+@@ -20,10 +20,7 @@
+ using namespace facebook;
+ using namespace margelo;
+ 
+-// This is defined in RCTCxxBridge.mm, and we are technically using a private API here.
+-@interface RCTCxxBridge (CallInvoker)
+-- (std::shared_ptr<react::CallInvoker>)jsCallInvoker;
+-@end
++
+ 
+ @implementation FilamentInstaller
+ 
+diff --git a/ios/src/RNFFilamentModule.mm b/ios/src/RNFFilamentModule.mm
+index 6078080afdb4d4bba61cdd840ab8ee498d50a481..03e543c29ad2d203360d464de0f84c3c394e290c 100644
+--- a/ios/src/RNFFilamentModule.mm
++++ b/ios/src/RNFFilamentModule.mm
+@@ -19,6 +19,7 @@
+ #import <React/RCTScheduler.h>
+ #import <React/RCTSurfacePresenter.h>
+ #import <React/RCTUIManager.h>
++#import <ReactCommon/RCTTurboModuleWithJSIBindings.h>
+ #import <react/renderer/components/rnfilament/ShadowNodes.h>
+ 
+ using namespace facebook;
+@@ -31,6 +32,8 @@ using namespace facebook;
+ @implementation FilamentModule {
+   __weak RCTSurfacePresenter* _surfacePresenter;
+   BOOL _isBridgeless;
++  jsi::Runtime* _jsiRuntime;
++  std::shared_ptr<react::CallInvoker> _jsCallInvoker;
+ }
+ 
+ RCT_EXPORT_MODULE()
+@@ -44,15 +47,18 @@ RCT_EXPORT_MODULE()
+   _isBridgeless = true;
+ }
+ 
++// React Native 0.87+ removed RCTCxxBridge. The runtime and call invoker now
++// arrive here when the TurboModule is created, before JS can call install.
++- (void)installJSIBindingsWithRuntime:(jsi::Runtime&)runtime
++                          callInvoker:(const std::shared_ptr<react::CallInvoker>&)callInvoker {
++  _jsiRuntime = &runtime;
++  _jsCallInvoker = callInvoker;
++}
++
+ - (NSNumber*)install {
+-  jsi::Runtime* jsiRuntime = nullptr;
+-  std::shared_ptr<react::CallInvoker> jsCallInvoker = nullptr;
+-  if (_isBridgeless) {
+-    // If we are in bridgless mode we can cast directly to RCTCxxBridge to get our properties:
+-    RCTCxxBridge* cxxBridge = (RCTCxxBridge*)self.bridge;
+-    jsiRuntime = (jsi::Runtime*)cxxBridge.runtime;
+-    jsCallInvoker = cxxBridge.jsCallInvoker;
+-  } else {
++  jsi::Runtime* jsiRuntime = _jsiRuntime;
++  std::shared_ptr<react::CallInvoker> jsCallInvoker = _jsCallInvoker;
++  if (!_isBridgeless && (jsiRuntime == nullptr || jsCallInvoker == nullptr)) {
+     jsiRuntime = [self.bridge respondsToSelector:@selector(runtime)] ? reinterpret_cast<jsi::Runtime*>(self.bridge.runtime) : nullptr;
+     jsCallInvoker = self.bridge.jsCallInvoker;
+     _surfacePresenter = self.bridge.surfacePresenter;
+@@ -66,6 +72,9 @@ RCT_EXPORT_MODULE()
+     NSLog(@"Failed to install react-native-filament: react::CallInvoker is nil (bridgless: %@)!", _isBridgeless ? @"YES" : @"NO");
+     return [NSNumber numberWithBool:NO];
+   }
++  if (_surfacePresenter == nil) {
++    NSLog(@"react-native-filament: surfacePresenter is nil (bridgeless: %@)", _isBridgeless ? @"YES" : @"NO");
++  }
+ 
+   BOOL result = [FilamentInstaller installToBridge:jsiRuntime callInvoker:jsCallInvoker surfacePresenter:_surfacePresenter];
+   return [NSNumber numberWithBool:result];
