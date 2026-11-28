@@ -10,7 +10,7 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Tabs } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -99,21 +99,6 @@ export default function TabLayout() {
                     fill={color}
                   />
                 </Svg>
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="feed"
-            options={{
-              title: "Feed",
-              tabBarIcon: ({ color }) => (
-                <Ionicons
-                  name="play-circle-outline"
-                  size={26}
-                  color={
-                    typeof color === "number" ? undefined : (color ?? undefined)
-                  }
-                />
               ),
             }}
           />
