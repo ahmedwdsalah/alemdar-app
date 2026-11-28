@@ -15,7 +15,7 @@ index af9f54826458c10e0bb3bfc5a5fd8a12372e0c1f..2ec896abfa700782c76fa77b4b8ddbd0
  @implementation FilamentInstaller
  
 diff --git a/ios/src/RNFFilamentModule.mm b/ios/src/RNFFilamentModule.mm
-index 6078080afdb4d4bba61cdd840ab8ee498d50a481..03e543c29ad2d203360d464de0f84c3c394e290c 100644
+index 6078080afdb4d4bba61cdd840ab8ee498d50a481..a2a32b5e05ec56ad8ab09ca8b7fc7c320b5607e7 100644
 --- a/ios/src/RNFFilamentModule.mm
 +++ b/ios/src/RNFFilamentModule.mm
 @@ -19,6 +19,7 @@
@@ -72,3 +72,52 @@ index 6078080afdb4d4bba61cdd840ab8ee498d50a481..03e543c29ad2d203360d464de0f84c3c
  
    BOOL result = [FilamentInstaller installToBridge:jsiRuntime callInvoker:jsCallInvoker surfacePresenter:_surfacePresenter];
    return [NSNumber numberWithBool:result];
+diff --git a/src/utilities/withCleanupScope.ts b/src/utilities/withCleanupScope.ts
+index 20ec04e4a14b5a6aea36ddce86c747cd122ebf5c..0ac169576a52f81ec7fd3a4cd37be12e9937ebc9 100644
+--- a/src/utilities/withCleanupScope.ts
++++ b/src/utilities/withCleanupScope.ts
+@@ -1,34 +1,23 @@
+-import { InteractionManager } from 'react-native'
+-
+ /**
+  * Operations that are releasing memory from JS should be executed after cleanup functions
+  * that are still operating on the resource.
+- * For example in a cleanup you might remove an asset from the scene, but you also want to release the memory of the asset.
+- * The memory release() function call should be wrapped with withCleanupScope.
+  *
+  * @note You probably don't need to call this yourself!
+- *
+- * @example
+- *
+- * ```ts
+- * useEffect(() => {
+- *  const asset = // ... acquire some resources
+- *
+- *   return withCleanupScope(() => {
+- *     asset.release()
+- *   })
+- * })
+- * ```
+  */
+ export function withCleanupScope(cleanupFunction: Function) {
+   return () => {
+-    // runAfterInteractions to make sure its called after all children have run their cleanup and all interactions are done
+-    InteractionManager.runAfterInteractions(() => {
+-      // Cleanup in worklets context, as cleanup functions might also use the worklet context
+-      // and we want to queue our cleanup after all other worklets have run
++    // InteractionManager was removed in React Native 0.88, so we defer
++    // the cleanup with requestIdleCallback (setTimeout as a fallback).
++    const run = () => {
+       setTimeout(() => {
+         cleanupFunction()
+       }, 0)
+-    })
++    }
++    const g: any = globalThis
++    if (typeof g.requestIdleCallback === 'function') {
++      g.requestIdleCallback(run)
++    } else {
++      setTimeout(run, 0)
++    }
+   }
+ }
